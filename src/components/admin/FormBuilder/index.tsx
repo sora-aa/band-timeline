@@ -113,7 +113,9 @@ export default function FormBuilder({ onSave }: FormBuilderProps) {
                 <textarea
                   className={styles.textarea}
                   rows={4}
-                  placeholder="ギター&#13;&#10;ベース&#13;&#10;ドラム"
+                  placeholder={`ギター
+ベース
+ドラム`}
                   value={field.options?.join("\n") || ""}
                   onChange={(e) =>
                     handleOptionsChange(field.id, e.target.value)

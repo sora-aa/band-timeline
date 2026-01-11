@@ -10,11 +10,15 @@ import styles from "./style.module.css";
 // voidは返り値がないことを示す
 interface FormBuilderProps {
   onSave: (fields: QuestionField[]) => void;
+  initialFields?: QuestionField[]; // すでに質問データがあった場合に渡す
 }
 
-export default function FormBuilder({ onSave }: FormBuilderProps) {
+export default function FormBuilder({
+  onSave,
+  initialFields = [],
+}: FormBuilderProps) {
   // 質問リストを作成
-  const [fields, setFields] = useState<QuestionField[]>([]); // 初期値は空の配列
+  const [fields, setFields] = useState<QuestionField[]>(initialFields);
 
   // 質問を追加する関数
   const addField = () => {
@@ -51,14 +55,37 @@ export default function FormBuilder({ onSave }: FormBuilderProps) {
     );
   };
 
-  // 入力された選択肢のテキストを配列に変換して更新する関数
-  const handleOptionsChange = (id: string, text: string) => {
-    const optionArray = text
-      .split("\n") // 改行で分割
-      .map((line) => line.trim()) // 各行の前後の空白を削除
-      .filter((line) => line !== ""); // 空の行を除外
-    // optionsプロパティだけを更新
-    updateField(id, { options: optionArray });
+  // 選択肢を追加する関数
+  const addOption = (fieldId: string) => {
+    // 指定された質問に新しい空の選択肢を追加
+    updateField(fieldId, {
+      options: [...(fields.find((f) => f.id === fieldId)?.options || []), ""],
+    });
+  };
+
+  // 選択肢を更新する関数
+  const updateOption = (
+    fieldId: string,
+    optionIndex: number,
+    updates: string
+  ) => {
+    // 指定された選択肢のテキストを更新
+    const field = fields.find((f) => f.id === fieldId);
+    if (field?.options) {
+      const newOptions = [...field.options]; // 現在の選択肢をコピーする
+      newOptions[optionIndex] = updates; // 指定されたインデックスの選択肢を更新
+      updateField(fieldId, { options: newOptions }); // フィールドを更新
+    }
+  };
+
+  // 選択肢を削除する関数
+  const removeOption = (fieldId: string, optionIndex: number) => {
+    // 指定された選択肢を配列から削除
+    const field = fields.find((f) => f.id === fieldId);
+    if (field?.options) {
+      const newOptions = field.options.filter((_, idx) => idx !== optionIndex); // 指定されたインデックスの選択肢を除外
+      updateField(fieldId, { options: newOptions });
+    }
   };
 
   return (
@@ -132,19 +159,41 @@ export default function FormBuilder({ onSave }: FormBuilderProps) {
             {(field.type === "select" || field.type === "checkbox") && (
               <div className={styles.optionsWrapper}>
                 <label className={styles.smallLabel}>
-                  選択肢（1行に1つずつ入力）
+                  選択肢（各入力欄に1つずつ入力）
                 </label>
-                <textarea
-                  className={styles.textarea}
-                  rows={4}
-                  placeholder={`ギター
-ベース
-ドラム`}
-                  value={field.options?.join("\n") || ""}
-                  onChange={(e) =>
-                    handleOptionsChange(field.id, e.target.value)
-                  }
-                />
+
+                {/* 既存の選択肢をリスト表示 */}
+                <div className={styles.optionsList}>
+                  {field.options?.map((option, optionIndex) => (
+                    <div key={optionIndex} className={styles.optionItem}>
+                      <input
+                        type="text"
+                        className={styles.optionInput}
+                        placeholder={`選択肢 ${optionIndex + 1}`}
+                        value={option}
+                        onChange={(e) =>
+                          updateOption(field.id, optionIndex, e.target.value)
+                        }
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeOption(field.id, optionIndex)}
+                        className={styles.removeOptionButton}
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+
+                {/* 選択肢を追加するボタン */}
+                <button
+                  type="button"
+                  onClick={() => addOption(field.id)}
+                  className={styles.addOptionButton}
+                >
+                  + 選択肢を追加
+                </button>
               </div>
             )}
 

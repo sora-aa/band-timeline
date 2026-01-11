@@ -30,5 +30,5 @@ export type Schedule = {
   title: string;
   start_date: string;
   end_date: string;
-  form_schema: QuestionField[] | null;
+  form_schema: QuestionField[];
 };

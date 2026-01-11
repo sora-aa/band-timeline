@@ -1,0 +1,69 @@
+/* ページ全体のコンテナ */
+.container {
+  padding: 40px;
+  max-width: 800px;
+  margin: 0 auto;
+  font-family: sans-serif;
+}
+
+/* 読込中の状態 */
+.loading {
+  padding: 40px;
+}
+
+/* ページヘッダーセクション */
+.header {
+  margin-bottom: 20px;
+}
+
+/* 戻るリンク */
+.backLink {
+  text-decoration: none;
+  color: #666;
+  font-size: 14px;
+}
+
+/* ページタイトル */
+.pageTitle {
+  margin-top: 10px;
+  font-size: 24px;
+  margin-bottom: 0;
+}
+
+/* 対象イベント情報 */
+.scheduleInfo {
+  color: #4b5563;
+  margin-bottom: 0;
+}
+
+/* ステータスメッセージ */
+.statusMessage {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1000;
+  padding: 15px 20px;
+  border-radius: 6px;
+  max-width: 400px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* ステータスメッセージ（エラー時） */
+.statusError {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+/* ステータスメッセージ（成功時） */
+.statusSuccess {
+  background-color: #dcfce7;
+  color: #166534;
+}
+
+/* フォームコンテナ */
+.formContainer {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 20px;
+  background: #fff;
+}

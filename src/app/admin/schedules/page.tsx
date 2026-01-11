@@ -114,8 +114,8 @@ export default function AdminScheduleListPage() {
 
                 {/* フォーム作成状況のバッジ表示 */}
                 <div className={styles.statusContainer}>
-                  {schedule.form_schema ? (
-                    // form_schemaが存在=フォーム作成済み
+                  {schedule.form_schema && schedule.form_schema.length > 0 ? (
+                    // form_schemaに質問フィールドが入っている=フォーム作成済み
                     <span className={`${styles.badge} ${styles.badgeComplete}`}>
                       ✓ フォーム作成済み
                     </span>

@@ -1,0 +1,123 @@
+/* ページ全体のコンテナ */
+.container {
+  padding: 40px;
+  max-width: 600px;
+  margin: 0 auto;
+  font-family: sans-serif;
+}
+
+/* ヘッダーセクション */
+.header {
+  margin-bottom: 20px;
+}
+
+/* 戻るリンク */
+.backLink {
+  text-decoration: none;
+  color: #666;
+  font-size: 14px;
+}
+
+/* ページタイトル */
+.pageTitle {
+  margin-top: 10px;
+  font-size: 24px;
+  margin-bottom: 0;
+}
+
+/* エラーメッセージ表示 */
+.errorMessage {
+  padding: 10px;
+  background-color: #fee2e2;
+  color: #991b1b;
+  border-radius: 6px;
+  margin-bottom: 20px;
+}
+
+/* フォーム */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* フォームの各セクション */
+.formGroup {
+  display: flex;
+  flex-direction: column;
+}
+
+/* フォーム内の日付セクション（開始日・終了日） */
+.dateGroup {
+  display: flex;
+  gap: 20px;
+}
+
+.dateGroupChild {
+  flex: 1;
+}
+
+/* フォームのラベル */
+.label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: bold;
+}
+
+/* 必須マークの赤い色 */
+.required {
+  color: red;
+}
+
+/* フォームのinput要素 */
+.input {
+  width: 100%;
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 16px;
+  box-sizing: border-box;
+}
+
+/* input要素のフォーカス時のスタイル */
+.input:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+/* ヘルプテキスト（※1日だけのイベントの際は） */
+.helpText {
+  font-size: 12px;
+  color: #666;
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+
+/* 送信ボタン */
+.submitButton {
+  margin-top: 10px;
+  padding: 12px;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+/* 送信ボタン（通常時） */
+.submitButton:not(:disabled) {
+  background-color: #2563eb;
+}
+
+.submitButton:not(:disabled):hover {
+  background-color: #1d4ed8;
+}
+
+/* 送信ボタン（ローディング中） */
+.submitButton:disabled {
+  background-color: #9ca3af;
+  cursor: not-allowed;
+}

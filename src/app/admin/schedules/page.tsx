@@ -131,7 +131,7 @@ export default function AdminScheduleListPage() {
               {/* 右側：アクションボタン（編集・削除） */}
               <div className={styles.actions}>
                 <Link
-                  href={`/admin/schedules/edit-form/${schedule.id}`}
+                  href={`/admin/schedules/${schedule.id}/edit-form/`}
                   className={styles.editButton}
                 >
                   フォーム編集

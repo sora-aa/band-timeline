@@ -24,3 +24,11 @@ export interface Band {
     [questionId: string]: string | number | boolean | string[] | undefined;
   };
 }
+
+export type Schedule = {
+  id: string;
+  title: string;
+  start_date: string;
+  end_date: string;
+  form_schema: QuestionField[] | null;
+};

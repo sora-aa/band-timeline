@@ -157,3 +157,67 @@
   background-color: #fef2f2;
   border-color: #fecaca;
 }
+
+/* ステータス切り替えセクション（フォーム・タイムテーブル） */
+.statusSection {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  align-items: flex-end;
+  margin-right: 20px;
+}
+
+/* ステータス行（ラベル + ボタン） */
+.statusRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* ステータスラベル */
+.statusLabel {
+  font-size: 12px;
+  color: #666;
+}
+
+/* フォーム公開・非公開ボタン */
+.formStatusButton {
+  padding: 6px 10px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: bold;
+  width: 80px;
+}
+
+.formStatusButton.open {
+  background-color: #2563eb;
+  color: white;
+}
+
+.formStatusButton.closed {
+  background-color: #e5e7eb;
+  color: #374151;
+}
+
+/* タイムテーブル公開・非公開ボタン */
+.timetableStatusButton {
+  padding: 6px 10px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: bold;
+  width: 80px;
+}
+
+.timetableStatusButton.open {
+  background-color: #16a34a;
+  color: white;
+}
+
+.timetableStatusButton.closed {
+  background-color: #e5e7eb;
+  color: #374151;
+}

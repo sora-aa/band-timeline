@@ -80,6 +80,32 @@ export default function AdminScheduleListPage() {
     }
   };
 
+  // フォームまたはタイムテーブルの公開・非公開を切り替える関数
+  const toggleStatus = async (
+    schedule: Schedule,
+    column: "is_form_open" | "is_timetable_open"
+  ) => {
+    const newValue = !schedule[column]; // 現在の値の反対をセット true→false、false→true
+
+    // 画面上の表示はすぐに更新
+    setSchedules((prev) =>
+      prev.map((s) => (s.id === schedule.id ? { ...s, [column]: newValue } : s))
+    );
+
+    // supabaseのデータは後から更新
+    try {
+      const { error } = await supabase
+        .from("schedules")
+        .update({ [column]: newValue })
+        .eq("id", schedule.id);
+
+      if (error) throw error;
+    } catch {
+      alert("更新に失敗しました");
+      fetchSchedules(); // 失敗したら再度データを取得して画面を最新状態に戻す
+    }
+  };
+
   return (
     <div className={styles.container}>
       {/* ページヘッダー：タイトルと新規作成ボタン */}
@@ -105,7 +131,10 @@ export default function AdminScheduleListPage() {
           {/* schedulesの配列を順番に処理し、各スケジュール項目を生成 */}
           {schedules.map((schedule) => (
             <div key={schedule.id} className={styles.scheduleItem}>
-              {/* 左側：スケジュールの情報（タイトル、日付、フォーム作成状況） */}
+              {/* 
+                左側：スケジュールの情報（タイトル、日付、フォーム作成状況）
+                flex: 1でコンテナ内の余りの空間を占める
+              */}
               <div className={styles.scheduleInfo}>
                 <h3 className={styles.scheduleTitle}>{schedule.title}</h3>
                 <p className={styles.scheduleDate}>
@@ -128,7 +157,42 @@ export default function AdminScheduleListPage() {
                 </div>
               </div>
 
-              {/* 右側：アクションボタン（編集・削除） */}
+              {/* 
+                中央：フォームとタイムテーブルの公開・非公開を切り替えるボタン
+                2つの行に分けて上下に配置
+              */}
+              <div className={styles.statusSection}>
+                {/* フォーム公開状態の切り替え */}
+                <div className={styles.statusRow}>
+                  <span className={styles.statusLabel}>フォーム</span>
+                  <button
+                    onClick={() => toggleStatus(schedule, "is_form_open")}
+                    className={`${styles.formStatusButton} ${
+                      schedule.is_form_open ? styles.open : styles.closed
+                    }`}
+                  >
+                    {schedule.is_form_open ? "公開" : "非公開"}
+                  </button>
+                </div>
+
+                {/* タイムテーブル公開状態の切り替え */}
+                <div className={styles.statusRow}>
+                  <span className={styles.statusLabel}>タイムテーブル</span>
+                  <button
+                    onClick={() => toggleStatus(schedule, "is_timetable_open")}
+                    className={`${styles.timetableStatusButton} ${
+                      schedule.is_timetable_open ? styles.open : styles.closed
+                    }`}
+                  >
+                    {schedule.is_timetable_open ? "公開" : "非公開"}
+                  </button>
+                </div>
+              </div>
+
+              {/* 
+                右側：アクションボタン（フォーム編集・スケジュール削除）
+                flexで並ぶため、最後に配置
+              */}
               <div className={styles.actions}>
                 <Link
                   href={`/admin/schedules/${schedule.id}/edit-form/`}

@@ -31,4 +31,6 @@ export type Schedule = {
   start_date: string;
   end_date: string;
   form_schema: QuestionField[];
+  is_form_open: boolean;
+  is_timetable_open: boolean;
 };

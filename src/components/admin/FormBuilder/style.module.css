@@ -24,6 +24,41 @@
   background: #f9fafb;
 }
 
+/* 固定項目のフィールドアイテム */
+.fieldItemFixed {
+  background-color: #f9fafb;
+  border-color: #e5e7eb;
+}
+
+/* disabledされた入力フィールド */
+.input:disabled,
+.select:disabled {
+  background-color: #f3f4f6;
+  cursor: not-allowed;
+  color: #666;
+  pointer-events: none;
+}
+
+/* disabledされたselectのスタイル */
+.select:disabled {
+  opacity: 0.7;
+}
+
+/* ロックアイコン */
+.lockIcon {
+  margin-right: 4px;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+/* 固定項目ラベル */
+.fixedLabel {
+  font-size: 10px;
+  color: #666;
+  margin-left: 6px;
+  font-weight: normal;
+}
+
 /* ヘッダー: 質問文入力欄と、削除ボタンを横並びにします */
 .fieldHeader {
   display: flex;

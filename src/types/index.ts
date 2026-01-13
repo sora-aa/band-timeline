@@ -5,6 +5,8 @@ export type QuestionType =
   | "checkbox"
   | "select";
 
+export type QuestionAnswer = string | number | boolean | string[];
+
 export interface QuestionField {
   id: string;
   label: string; //質問文
@@ -16,12 +18,13 @@ export interface QuestionField {
 
 export interface Band {
   id: string;
-  name: string;
+  representativeName: string;
+  bandName: string;
   durationMinutes: number;
   isBreak: boolean;
 
   customAnswers?: {
-    [questionId: string]: string | number | boolean | string[] | undefined;
+    [questionId: string]: QuestionAnswer | undefined;
   };
 }
 

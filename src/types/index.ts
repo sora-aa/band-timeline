@@ -23,6 +23,7 @@ export interface Band {
   duration_minutes: number;
   is_break: boolean;
   sort_order: number | null;
+  transition_duration: number | null;
 
   custom_answers?: {
     [question_id: string]: QuestionAnswer | undefined;
@@ -38,3 +39,6 @@ export type Schedule = {
   is_form_open: boolean;
   is_timetable_open: boolean;
 };
+
+// Band型のフィールド値のユニオン型
+export type BandFieldValue = Band[keyof Band];

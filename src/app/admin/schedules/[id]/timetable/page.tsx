@@ -23,7 +23,8 @@ import {
   useSortable,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Band } from "@/types";
+import { Band, BandFieldValue } from "@/types";
+import { SortableItem } from "@/components/admin/SortableItem";
 
 function DroppableContainer({
   id,
@@ -42,49 +43,6 @@ function DroppableContainer({
   );
 }
 
-function SortableItem({
-  id,
-  band,
-  isOverlay = false,
-}: {
-  id: string;
-  band: Band;
-  isOverlay?: boolean;
-}) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id });
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    padding: "15px",
-    marginBottom: "10px",
-    backgroundColor: band.is_break ? "#fff7ed" : "white",
-    border: isDragging ? "2px solid #2563eb" : "1px solid #d1d5db",
-    borderRadius: "6px",
-    cursor: isOverlay ? "grabbing" : "grab",
-    opacity: isDragging ? 0.3 : 1,
-    boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-    position: "relative" as const,
-  };
-  return (
-    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
-      <div style={{ fontWeight: "bold", fontSize: "16px" }}>
-        {band.is_break ? "休憩" : band.band_name}
-      </div>
-      <div style={{ fontSize: "12px", color: "#666", marginTop: "4px" }}>
-        {band.is_break ? "" : `${band.representative_name} / `}{" "}
-        {band.duration_minutes}分
-      </div>
-    </div>
-  );
-}
-
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -99,7 +57,6 @@ export default function TimetableEditor() {
   const [saving, setSaving] = useState(false);
   const [startHour, setStartHour] = useState(10);
   const [startMinute, setStartMinute] = useState(0);
-  const [intervalMinutes, setIntervalMinutes] = useState(10);
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
     useSensor(KeyboardSensor, {
@@ -121,6 +78,46 @@ export default function TimetableEditor() {
     };
     fetchData();
   }, [scheduleId]);
+
+  const handleBandChange = (
+    id: string,
+    field: keyof Band,
+    value: BandFieldValue,
+  ) => {
+    const updateList = (list: Band[]) =>
+      list.map((b) => (b.id === id ? { ...b, [field]: value } : b));
+
+    setUnscheduled((prev) => updateList(prev));
+    setScheduled((prev) => updateList(prev));
+  };
+
+  const addBreak = async () => {
+    const newBreak = {
+      schedule_id: scheduleId,
+      band_name: "休憩",
+      representative_name: "",
+      duration_minutes: 10,
+      is_break: true,
+      sort_order: null,
+      transition_duration: null,
+    };
+
+    const { data, error } = await supabase
+      .from("bands")
+      .insert(newBreak)
+      .select()
+      .single();
+
+    if (error) {
+      alert("追加に失敗しました");
+      console.log(error);
+      return;
+    }
+
+    if (data) {
+      setUnscheduled((prev) => [...prev, data as Band]);
+    }
+  };
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
@@ -168,11 +165,15 @@ export default function TimetableEditor() {
         id: band.id,
         sort_order: index,
         schedule_id: scheduleId,
+        duration_minutes: band.duration_minutes,
+        transition_duration: band.transition_duration,
       }));
       const resets = unscheduled.map((band) => ({
         id: band.id,
         sort_order: null,
         schedule_id: scheduleId,
+        duration_minutes: band.duration_minutes,
+        transition_duration: band.transition_duration,
       }));
       for (const item of updates) {
         await supabase
@@ -244,6 +245,22 @@ export default function TimetableEditor() {
             <h2 style={{ fontSize: "18px", margin: "10px 0 5px" }}>
               未配置のバンド
             </h2>
+            <button
+              onClick={addBreak}
+              style={{
+                width: "100%",
+                padding: "8px",
+                marginTop: "10px",
+                backgroundColor: "#fff7ed",
+                border: "1px dashed #f97316",
+                color: "#f97316",
+                borderRadius: "6px",
+                cursor: "pointer",
+                fontWeight: "bold",
+              }}
+            >
+              休憩・自由枠を追加
+            </button>
             <p style={{ fontSize: "12px", color: "#6b7280" }}>
               ドラッグして右側のタイムテーブルに配置してください
             </p>
@@ -254,7 +271,12 @@ export default function TimetableEditor() {
               strategy={verticalListSortingStrategy}
             >
               {unscheduled.map((band) => (
-                <SortableItem key={band.id} id={band.id} band={band} />
+                <SortableItem
+                  key={band.id}
+                  id={band.id}
+                  band={band}
+                  onChange={handleBandChange}
+                />
               ))}
             </SortableContext>
             {unscheduled.length === 0 && (
@@ -329,25 +351,6 @@ export default function TimetableEditor() {
                     }}
                   />
                 </div>
-                <div
-                  style={{ display: "flex", alignItems: "center", gap: "5px" }}
-                >
-                  <label style={{ fontSize: "14px", fontWeight: "bold" }}>
-                    転換:
-                  </label>
-                  <input
-                    type="number"
-                    value={intervalMinutes}
-                    onChange={(e) => setIntervalMinutes(Number(e.target.value))}
-                    style={{
-                      width: "50px",
-                      padding: "5px",
-                      borderRadius: "4px",
-                      border: "1px solid #ccc",
-                    }}
-                  />
-                  <span style={{ fontSize: "14px" }}>分</span>
-                </div>
               </div>
             </div>
             <button
@@ -387,8 +390,9 @@ export default function TimetableEditor() {
                     hour: "2-digit",
                     minute: "2-digit",
                   });
+                  const transition = band.transition_duration ?? 10;
                   currentTime = new Date(
-                    endTime.getTime() + intervalMinutes * 60000,
+                    endTime.getTime() + transition * 60000,
                   );
                   return (
                     <div
@@ -424,10 +428,14 @@ export default function TimetableEditor() {
                           </div>
                         </div>
                         <div style={{ flex: 1 }}>
-                          <SortableItem id={band.id} band={band} />
+                          <SortableItem
+                            id={band.id}
+                            band={band}
+                            onChange={handleBandChange}
+                          />
                         </div>
                       </div>
-                      {index < scheduled.length - 1 && intervalMinutes > 0 && (
+                      {index < scheduled.length - 1 && transition > 0 && (
                         <div
                           style={{
                             display: "flex",
@@ -456,7 +464,7 @@ export default function TimetableEditor() {
                               alignItems: "center",
                             }}
                           >
-                            転換 ({intervalMinutes}分)
+                            転換 ({transition}分)
                           </div>
                         </div>
                       )}
@@ -484,7 +492,12 @@ export default function TimetableEditor() {
         </DroppableContainer>
         <DragOverlay>
           {activeItem ? (
-            <SortableItem id={activeItem.id} band={activeItem} isOverlay />
+            <SortableItem
+              id={activeItem.id}
+              band={activeItem}
+              isOverlay
+              onChange={() => {}}
+            />
           ) : null}
         </DragOverlay>
       </DndContext>

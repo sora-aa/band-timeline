@@ -18,13 +18,14 @@ export interface QuestionField {
 
 export interface Band {
   id: string;
-  representativeName: string;
-  bandName: string;
-  durationMinutes: number;
-  isBreak: boolean;
+  representative_name: string;
+  band_name: string;
+  duration_minutes: number;
+  is_break: boolean;
+  sort_order: number | null;
 
-  customAnswers?: {
-    [questionId: string]: QuestionAnswer | undefined;
+  custom_answers?: {
+    [question_id: string]: QuestionAnswer | undefined;
   };
 }
 

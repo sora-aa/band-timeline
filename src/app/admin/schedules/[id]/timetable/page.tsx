@@ -20,24 +20,26 @@ import {
   SortableContext,
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
-  useSortable,
 } from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
 import { Band, BandFieldValue } from "@/types";
 import { SortableItem } from "@/components/admin/SortableItem";
+import styles from "./style.module.css";
 
+// ドロップ可能なエリアを定義するコンポーネント
 function DroppableContainer({
   id,
   children,
+  className,
   style,
 }: {
   id: string;
   children: React.ReactNode;
+  className?: string;
   style?: React.CSSProperties;
 }) {
   const { setNodeRef } = useDroppable({ id });
   return (
-    <div ref={setNodeRef} id={id} style={style}>
+    <div ref={setNodeRef} id={id} className={className} style={style}>
       {children}
     </div>
   );
@@ -49,16 +51,29 @@ const supabase = createClient(
 );
 
 export default function TimetableEditor() {
+  // URLからどのスケジュールの編集画面かを取得
   const params = useParams();
   const scheduleId = params.id as string;
+
+  // バンドのリストを「未配置」と「配置済み」に分けて管理
   const [unscheduled, setUnscheduled] = useState<Band[]>([]);
   const [scheduled, setScheduled] = useState<Band[]>([]);
+
+  // ドラッグ中のアイテムのIDを保存
   const [activeId, setActiveId] = useState<string | null>(null);
+
+  // データを保存中かどうか
   const [saving, setSaving] = useState(false);
+
+  // スケジュールの開始時間の管理
   const [startHour, setStartHour] = useState(10);
   const [startMinute, setStartMinute] = useState(0);
+
+  // ドラッグ&ドロップのセンサーを設定
   const sensors = useSensors(
+    // 5ピクセル以上動かさないとドラッグを開始しない
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    // キーボードでのドラッグも有効にする
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     }),
@@ -67,31 +82,39 @@ export default function TimetableEditor() {
   useEffect(() => {
     const fetchData = async () => {
       const { data, error } = await supabase
-        .from("bands")
-        .select("*")
-        .eq("schedule_id", scheduleId)
-        .order("sort_order", { ascending: true });
+        .from("bands") // "bands"テーブルから
+        .select("*") // 全ての項目を取得
+        .eq("schedule_id", scheduleId) // このスケジュールのデータだけで絞り込み
+        .order("sort_order", { ascending: true }); // sort_orderの昇順で並び替え
+
       if (!error && data) {
+        // sort_orderがnullのものは未配置
         setUnscheduled(data.filter((b) => b.sort_order === null));
+        // sort_orderがnullでないものは配置済み
         setScheduled(data.filter((b) => b.sort_order !== null));
       }
     };
     fetchData();
   }, [scheduleId]);
 
+  // バンドの情報が変更されたときに呼ばれる関数
   const handleBandChange = (
-    id: string,
-    field: keyof Band,
-    value: BandFieldValue,
+    id: string, // どのバンドを変更するか
+    field: keyof Band, // どの項目を変更するか (例: "representative_name")
+    value: BandFieldValue, // 新しい値は何か
   ) => {
+    // リストを受け取って変更を適応した新しいリストを返す関数
     const updateList = (list: Band[]) =>
       list.map((b) => (b.id === id ? { ...b, [field]: value } : b));
 
+    // 両方のリストを更新する
     setUnscheduled((prev) => updateList(prev));
     setScheduled((prev) => updateList(prev));
   };
 
+  // 休憩や自由枠を追加する関数
   const addBreak = async () => {
+    // 新しい休憩のデータを作成
     const newBreak = {
       schedule_id: scheduleId,
       band_name: "休憩",
@@ -103,10 +126,10 @@ export default function TimetableEditor() {
     };
 
     const { data, error } = await supabase
-      .from("bands")
-      .insert(newBreak)
-      .select()
-      .single();
+      .from("bands") // "bands"テーブルに
+      .insert(newBreak) // データを追加
+      .select() // 作成したデータを取得
+      .single(); // 1件だけ
 
     if (error) {
       alert("追加に失敗しました");
@@ -114,53 +137,79 @@ export default function TimetableEditor() {
       return;
     }
 
+    // 画面の更新
     if (data) {
+      // 未配置のリストに今作ったデータを追加
       setUnscheduled((prev) => [...prev, data as Band]);
     }
   };
 
+  // ドラッグが終了したときの処理
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
+
+    // つかんでいる状態を解除
     setActiveId(null);
+
+    // 画面外でドロップしていたら何もせず終了
     if (!over) return;
-    const activeId = active.id as string;
-    const overId = over.id as string;
+
+    const activeId = active.id as string; // つかんでいたアイテムのID
+    const overId = over.id as string; // ドロップ先のID
+
     const findBand = (id: string) =>
       unscheduled.find((b) => b.id === id) ||
       scheduled.find((b) => b.id === id);
     const activeItem = findBand(activeId);
-    if (!activeItem) return;
+    if (!activeItem) return; // データが見つからなかった場合何もしない
+
+    // つかんだものが未配置かつ離した位置が配置済みエリアなら
     if (
       unscheduled.find((b) => b.id === activeId) &&
       (scheduled.find((b) => b.id === overId) || overId === "scheduled-area")
     ) {
+      // 未配置リストから削除
       setUnscheduled((prev) => prev.filter((b) => b.id !== activeId));
+      // 配置済みリストの末尾に追加
       setScheduled((prev) => [...prev, activeItem]);
       return;
     }
+
+    // つかんだものが配置済みかつ離した位置が未配置エリアなら
     if (
       scheduled.find((b) => b.id === activeId) &&
       (unscheduled.find((b) => b.id === overId) ||
         overId === "unscheduled-area")
     ) {
+      // 配置済みリストから削除
       setScheduled((prev) => prev.filter((b) => b.id !== activeId));
+      // 未配置リストの末尾に追加
       setUnscheduled((prev) => [...prev, activeItem]);
       return;
     }
+
+    // つかんだものも離した位置も配置済みエリアなら順番を入れ替える
     if (
       scheduled.find((b) => b.id === activeId) &&
       scheduled.find((b) => b.id === overId)
     ) {
+      // もともと何番目にいたか
       const oldIndex = scheduled.findIndex((b) => b.id === activeId);
+      // どこに移動したいか
       const newIndex = scheduled.findIndex((b) => b.id === overId);
+      // 順番を入れ替える
       setScheduled(arrayMove(scheduled, oldIndex, newIndex));
       return;
     }
   };
 
+  // 保存ボタンが押されたときの処理
   const handleSave = async () => {
+    // 保存中モードにする
     setSaving(true);
+
     try {
+      // mapを使ってindexを順番に振りながら更新用のデータを作成
       const updates = scheduled.map((band, index) => ({
         id: band.id,
         sort_order: index,
@@ -168,6 +217,8 @@ export default function TimetableEditor() {
         duration_minutes: band.duration_minutes,
         transition_duration: band.transition_duration,
       }));
+
+      // 未配置リストのものはsort_orderをnullにする
       const resets = unscheduled.map((band) => ({
         id: band.id,
         sort_order: null,
@@ -175,12 +226,15 @@ export default function TimetableEditor() {
         duration_minutes: band.duration_minutes,
         transition_duration: band.transition_duration,
       }));
+
+      // 配置済みのバンドを1つずつ更新
       for (const item of updates) {
         await supabase
           .from("bands")
           .update({ sort_order: item.sort_order })
           .eq("id", item.id);
       }
+      // 未配置のバンドも1つずつ更新
       for (const item of resets) {
         await supabase
           .from("bands")
@@ -194,78 +248,47 @@ export default function TimetableEditor() {
       console.error(err);
       alert("保存に失敗しました： " + errorMessage);
     } finally {
+      // 保存中モードを解除
       setSaving(false);
     }
   };
 
+  // 開始時間を計算するための変数
   let currentTime = new Date();
+  // 開始時間を設定
   currentTime.setHours(startHour, startMinute, 0);
+
+  // 今ドラッグしているカードを探すコード
   const activeItem =
     unscheduled.find((b) => b.id === activeId) ||
     scheduled.find((b) => b.id === activeId);
 
   return (
-    <div
-      style={{
-        display: "flex",
-        height: "100vh",
-        fontFamily: "sans-serif",
-        backgroundColor: "#f9fafb",
-      }}
-    >
+    <div className={styles.mainContainer}>
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
         onDragStart={(e) => setActiveId(e.active.id as string)}
         onDragEnd={handleDragEnd}
       >
+        {/* ===== 未配置バンド表示エリア ===== */}
         <DroppableContainer
           id="unscheduled-area"
-          style={{
-            width: "320px",
-            backgroundColor: "#fff",
-            borderRight: "1px solid #e5e7eb",
-            display: "flex",
-            flexDirection: "column",
-            boxShadow: "2px 0 5px rgba(0,0,0,0.03)",
-            zIndex: 10,
-          }}
+          className={styles.unscheduledArea}
         >
-          <div style={{ padding: "20px", borderBottom: "1px solid #e5e7eb" }}>
-            <Link
-              href={"/admin/schedules"}
-              style={{
-                textDecoration: "none",
-                color: "#6b7280",
-                fontSize: "14px",
-              }}
-            >
+          <div className={styles.unscheduledHeader}>
+            <Link href={"/admin/schedules"} className={styles.backLink}>
               &lt; 戻る
             </Link>
-            <h2 style={{ fontSize: "18px", margin: "10px 0 5px" }}>
-              未配置のバンド
-            </h2>
-            <button
-              onClick={addBreak}
-              style={{
-                width: "100%",
-                padding: "8px",
-                marginTop: "10px",
-                backgroundColor: "#fff7ed",
-                border: "1px dashed #f97316",
-                color: "#f97316",
-                borderRadius: "6px",
-                cursor: "pointer",
-                fontWeight: "bold",
-              }}
-            >
+            <h2 className={styles.unscheduledTitle}>未配置のバンド</h2>
+            <button onClick={addBreak} className={styles.addBreakButton}>
               休憩・自由枠を追加
             </button>
-            <p style={{ fontSize: "12px", color: "#6b7280" }}>
+            <p className={styles.unscheduledDescription}>
               ドラッグして右側のタイムテーブルに配置してください
             </p>
           </div>
-          <div style={{ flex: 1, overflowY: "auto", padding: "20px" }}>
+          <div className={styles.unscheduledContent}>
             <SortableContext
               items={unscheduled.map((b) => b.id)}
               strategy={verticalListSortingStrategy}
@@ -280,75 +303,34 @@ export default function TimetableEditor() {
               ))}
             </SortableContext>
             {unscheduled.length === 0 && (
-              <div
-                style={{
-                  textAlign: "center",
-                  padding: "20px",
-                  color: "#9ca3af",
-                  border: "2px dashed #e5e7eb",
-                  borderRadius: "8px",
-                }}
-              >
-                全て配置済みです
-              </div>
+              <div className={styles.emptyUnscheduled}>全て配置済みです</div>
             )}
           </div>
         </DroppableContainer>
 
+        {/* ===== 配置済みタイムテーブル表示エリア ===== */}
         <DroppableContainer
           id="scheduled-area"
-          style={{
-            flex: 1,
-            display: "flex",
-            flexDirection: "column",
-            height: "100vh",
-          }}
+          className={styles.scheduledArea}
         >
-          <div
-            style={{
-              padding: "20px 40px",
-              backgroundColor: "#fff",
-              borderBottom: "1px solid #e5e7eb",
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-            }}
-          >
-            <div>
-              <h1 style={{ fontSize: "24px", margin: "0 0 10px 0" }}>
-                タイムテーブル作成
-              </h1>
-              <div
-                style={{ display: "flex", gap: "20px", alignItems: "center" }}
-              >
-                <div
-                  style={{ display: "flex", alignItems: "center", gap: "5px" }}
-                >
-                  <label style={{ fontSize: "14px", fontWeight: "bold" }}>
-                    開始時間
-                  </label>
+          <div className={styles.scheduledHeader}>
+            <div className={styles.headerTitleSection}>
+              <h1 className={styles.pageTitle}>タイムテーブル作成</h1>
+              <div className={styles.headerControlSection}>
+                <div className={styles.startTimeGroup}>
+                  <label className={styles.startTimeLabel}>開始時間</label>
                   <input
                     type="number"
                     value={startHour}
                     onChange={(e) => setStartHour(Number(e.target.value))}
-                    style={{
-                      width: "50px",
-                      padding: "5px",
-                      borderRadius: "4px",
-                      border: "1px solid #ccc",
-                    }}
+                    className={styles.timeInput}
                   />
                   :
                   <input
                     type="number"
                     value={startMinute}
                     onChange={(e) => setStartMinute(Number(e.target.value))}
-                    style={{
-                      width: "50px",
-                      padding: "5px",
-                      borderRadius: "4px",
-                      border: "1px solid #ccc",
-                    }}
+                    className={styles.timeInput}
                   />
                 </div>
               </div>
@@ -356,24 +338,14 @@ export default function TimetableEditor() {
             <button
               onClick={handleSave}
               disabled={saving}
-              style={{
-                padding: "12px 24px",
-                backgroundColor: "#2563eb",
-                color: "white",
-                border: "none",
-                borderRadius: "6px",
-                fontWeight: "bold",
-                fontSize: "16px",
-                cursor: saving ? "not-allowed" : "pointer",
-                boxShadow: "0 2px 5px rgba(37,99,235,0.3)",
-              }}
+              className={styles.saveButton}
             >
               {saving ? "保存中..." : "保存する"}
             </button>
           </div>
 
-          <div style={{ flex: 1, overflowY: "auto", padding: "40px" }}>
-            <div style={{ maxWidth: "800px", margin: "0 auto" }}>
+          <div className={styles.scheduledContent}>
+            <div className={styles.timetableWrapper}>
               <SortableContext
                 items={scheduled.map((b) => b.id)}
                 strategy={verticalListSortingStrategy}
@@ -395,39 +367,14 @@ export default function TimetableEditor() {
                     endTime.getTime() + transition * 60000,
                   );
                   return (
-                    <div
-                      key={band.id}
-                      style={{ display: "flex", flexDirection: "column" }}
-                    >
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "flex-start",
-                          marginBottom: "0",
-                        }}
-                      >
-                        <div
-                          style={{
-                            width: "120px",
-                            paddingTop: "15px",
-                            textAlign: "right",
-                            paddingRight: "20px",
-                          }}
-                        >
-                          <div
-                            style={{
-                              fontSize: "16px",
-                              fontWeight: "bold",
-                              color: "#374151",
-                            }}
-                          >
-                            {startStr}
-                          </div>
-                          <div style={{ fontSize: "12px", color: "#9ca3af" }}>
-                            ~ {endStr}
-                          </div>
+                    <div key={band.id} className={styles.bandRow}>
+                      {/* バンド情報の表示 */}
+                      <div className={styles.bandInfoRow}>
+                        <div className={styles.timeDisplay}>
+                          <div className={styles.startTime}>{startStr}</div>
+                          <div className={styles.endTime}>~ {endStr}</div>
                         </div>
-                        <div style={{ flex: 1 }}>
+                        <div className={styles.bandCardContainer}>
                           <SortableItem
                             id={band.id}
                             band={band}
@@ -435,35 +382,12 @@ export default function TimetableEditor() {
                           />
                         </div>
                       </div>
+
+                      {/* 転換時間の表示 */}
                       {index < scheduled.length - 1 && transition > 0 && (
-                        <div
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            height: "30px",
-                            margin: "0 0 10px 0",
-                          }}
-                        >
-                          <div
-                            style={{
-                              width: "120px",
-                              borderRight: "2px solid #e5e7eb",
-                              height: "100%",
-                              marginRight: "20px",
-                            }}
-                          ></div>
-                          <div
-                            style={{
-                              fontSize: "12px",
-                              color: "#9ca3af",
-                              fontStyle: "italic",
-                              paddingLeft: "10px",
-                              borderLeft: "2px solid #e5e7eb",
-                              height: "100%",
-                              display: "flex",
-                              alignItems: "center",
-                            }}
-                          >
+                        <div className={styles.transitionDisplay}>
+                          <div className={styles.transitionLineLeft}></div>
+                          <div className={styles.transitionText}>
                             転換 ({transition}分)
                           </div>
                         </div>
@@ -473,16 +397,7 @@ export default function TimetableEditor() {
                 })}
               </SortableContext>
               {scheduled.length === 0 && (
-                <div
-                  style={{
-                    padding: "60px",
-                    textAlign: "center",
-                    color: "#9ca3af",
-                    border: "3px dashed #e5e7eb",
-                    borderRadius: "12px",
-                    backgroundColor: "#f9fafb",
-                  }}
-                >
+                <div className={styles.emptyScheduled}>
                   <h3>まだ配置されていません</h3>
                   <p>左側のリストからここへドラッグしてください</p>
                 </div>

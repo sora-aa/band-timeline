@@ -1,13 +1,18 @@
 "use client";
 
+import clsx from "clsx";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { Band, BandFieldValue } from "@/types";
+import styles from "./style.module.css";
 
+// 親から渡されるデータの型定義
 interface SortableItemProps {
   id: string;
   band: Band;
-  isOverlay?: boolean;
+  isOverlay?: boolean; // ドラッグして持ち上げている状態かどうか
+
+  // 入力欄を書き換えた時に実行する関数
   onChange: (id: string, field: keyof Band, value: BandFieldValue) => void;
 }
 
@@ -41,106 +46,67 @@ export function SortableItem({
 
   return (
     <div ref={setNodeRef} style={style}>
+      {/* カード全体ではなく「⋮」をつかんだ時だけドラッグできる */}
       <div
         {...attributes}
         {...listeners}
-        style={{
-          position: "absolute",
-          left: 0,
-          top: 0,
-          bottom: 0,
-          width: "24px",
-          backgroundColor: band.is_break ? "#fed7aa" : "#e5e7eb",
-          cursor: isOverlay ? "grabbing" : "grab",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          color: "#6b7280",
-        }}
+        className={clsx(
+          styles.dragHandle,
+          band.is_break && styles.break,
+          isOverlay && styles.grabbing,
+        )}
       >
         ⋮
       </div>
-      <div style={{ padding: "12px 12px 12px 36px" }}>
-        <div style={{ marginBottom: "8px" }}>
+
+      <div className={styles.contentWrapper}>
+        <div className={styles.headerWrapper}>
+          {/* 休憩だった時の表示 */}
           {band.is_break ? (
             <input
               type="text"
               value={band.band_name}
               onChange={(e) => onChange(id, "band_name", e.target.value)}
               placeholder="項目名 (例: 休憩)"
-              style={{
-                width: "100%",
-                fontWeight: "bold",
-                fontSize: "16px",
-                border: "1px solid #ddd",
-                borderRadius: "4px",
-                padding: "4px",
-                backgroundColor: "rgba(255,255,255,0.5)",
-              }}
+              className={styles.bandNameInput}
             />
           ) : (
-            <div style={{ fontWeight: "bold", fontSize: "16px" }}>
-              {band.band_name}
-            </div>
+            // 休憩でないときの表示
+            <div className={styles.bandNameText}>{band.band_name}</div>
           )}
+          {/* 休憩ではないときだけ代表者名を表示 */}
           {!band.is_break && (
-            <div style={{ fontSize: "12px", color: "#666" }}>
-              Rep: {band.representative_name}
+            <div className={styles.representativeName}>
+              代表者: {band.representative_name}
             </div>
           )}
         </div>
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "10px",
-            fontSize: "13px",
-          }}
-        >
-          <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-            <label style={{ color: "#666" }}>時間:</label>
+        <div className={styles.timeContainer}>
+          <div className={styles.durationGroup}>
+            <label className={styles.label}>時間:</label>
             <input
               type="number"
               value={band.duration_minutes}
               onChange={(e) =>
                 onChange(id, "duration_minutes", Number(e.target.value))
               }
-              style={{
-                width: "50px",
-                padding: "4px",
-                borderRadius: "4px",
-                border: "1px solid #ccc",
-              }}
+              className={styles.timeInput}
             />
             <span>分</span>
           </div>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "4px",
-              marginLeft: "auto",
-              backgroundColor: "#f3f4f6",
-              padding: "2px 6px",
-              borderRadius: "4px",
-            }}
-          >
-            <label style={{ color: "#666", fontSize: "11px" }}>転換時間:</label>
+          <div className={styles.transitionGroup}>
+            <label className={clsx(styles.label, styles.transitionLabel)}>
+              転換時間:
+            </label>
             <input
               type="number"
               value={band.transition_duration ?? 10}
               onChange={(e) =>
                 onChange(id, "transition_duration", Number(e.target.value))
               }
-              style={{
-                width: "45px",
-                padding: "2px",
-                borderRadius: "4px",
-                border: "1px solid #ccc",
-                fontSize: "12px",
-              }}
+              className={styles.transitionInput}
             />
-            <span style={{ fontSize: "11px" }}>分</span>
+            <span className={styles.transitionUnit}>分</span>
           </div>
         </div>
       </div>

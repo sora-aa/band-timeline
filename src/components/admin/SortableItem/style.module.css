@@ -1,0 +1,113 @@
+/* ドラッグハンドル（左側の⋮） */
+.dragHandle {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 24px;
+  background-color: #e5e7eb;
+  cursor: grab;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6b7280;
+}
+
+.dragHandle.break {
+  background-color: #fed7aa;
+}
+
+.dragHandle.grabbing {
+  cursor: grabbing;
+}
+
+/* コンテンツエリア */
+.contentWrapper {
+  padding: 12px 12px 12px 36px;
+}
+
+/* ヘッダー部分 */
+.headerWrapper {
+  margin-bottom: 8px;
+}
+
+/* 休憩時のバンド名入力フィールド */
+.bandNameInput {
+  width: 100%;
+  font-weight: bold;
+  font-size: 16px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 4px;
+  background-color: rgba(255, 255, 255, 0.5);
+  box-sizing: border-box;
+}
+
+/* 通常時のバンド名テキスト */
+.bandNameText {
+  font-weight: bold;
+  font-size: 16px;
+}
+
+/* 代表者名 */
+.representativeName {
+  font-size: 12px;
+  color: #666;
+}
+
+/* 時間情報のコンテナ */
+.timeContainer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+}
+
+/* 時間入力グループ */
+.durationGroup {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* 転換時間グループ */
+.transitionGroup {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+  background-color: #f3f4f6;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+/* 時間入力フィールド */
+.timeInput {
+  width: 50px;
+  padding: 4px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+}
+
+/* 転換時間入力フィールド */
+.transitionInput {
+  width: 45px;
+  padding: 2px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  font-size: 12px;
+}
+
+/* ラベル */
+.label {
+  color: #666;
+}
+
+.transitionLabel {
+  font-size: 11px;
+}
+
+/* 転換時間の単位 */
+.transitionUnit {
+  font-size: 11px;
+}

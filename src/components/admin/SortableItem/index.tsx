@@ -86,7 +86,7 @@ export function SortableItem({
             <label className={styles.label}>時間:</label>
             <input
               type="number"
-              value={band.duration_minutes}
+              value={band.duration_minutes ?? 0}
               onChange={(e) =>
                 onChange(id, "duration_minutes", Number(e.target.value))
               }

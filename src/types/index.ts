@@ -38,6 +38,7 @@ export type Schedule = {
   form_schema: QuestionField[];
   is_form_open: boolean;
   is_timetable_open: boolean;
+  start_time: string | null;
 };
 
 // Band型のフィールド値のユニオン型

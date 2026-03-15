@@ -94,7 +94,23 @@ export default function TimetableEditor() {
         setScheduled(data.filter((b) => b.sort_order !== null));
       }
     };
+
+    const fetchSchedule = async () => {
+      const { data, error } = await supabase
+        .from("schedules")
+        .select("start_time")
+        .eq("id", scheduleId)
+        .single();
+      if (!error && data) {
+        const [hour, minute] = data.start_time?.split(":").map(Number) || [
+          10, 0,
+        ];
+        setStartHour(hour);
+        setStartMinute(minute);
+      }
+    };
     fetchData();
+    fetchSchedule();
   }, [scheduleId]);
 
   // バンドの情報が変更されたときに呼ばれる関数
@@ -241,6 +257,14 @@ export default function TimetableEditor() {
           .update({ sort_order: null })
           .eq("id", item.id);
       }
+
+      await supabase
+        .from("schedules")
+        .update({
+          start_time: `${String(startHour).padStart(2, "0")}:${String(startMinute).padStart(2, "0")}:00`,
+        })
+        .eq("id", scheduleId);
+
       alert("タイムテーブルを保存しました");
     } catch (err: unknown) {
       const errorMessage =

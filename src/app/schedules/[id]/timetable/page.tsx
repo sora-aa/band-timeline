@@ -36,7 +36,10 @@ export default async function TimetablePage({
     return <div>開始時間が設定されていません</div>;
   }
 
-  const [hour, minute] = schedule.start_time.split(":").map(Number);
+  const timeToMinutes = (time: string): number => {
+    const [h, m] = time.split(":").map(Number);
+    return h * 60 + m;
+  };
 
   const minutesToTime = (minutes: number): string => {
     const h = Math.floor(minutes / 60);
@@ -52,7 +55,7 @@ export default async function TimetablePage({
     },
   );
 
-  let startTime = hour * 60 + minute;
+  let startTime = timeToMinutes(schedule.start_time);
   const timetableData: TimetableRow[] = [];
   for (const band of bands) {
     const endTime = startTime + band.duration_minutes;
@@ -86,15 +89,29 @@ export default async function TimetablePage({
     return rows.map((data) => {
       const timeText = `${data.start_time}-${data.end_time}`;
       const bandText = `${data.band.band_name} (${data.band.duration_minutes}分)`;
+      const transitionText = `転換 (${data.band.transition_duration}分)`;
+      const transitionTimeText = `${data.end_time} - ${minutesToTime(timeToMinutes(data.end_time) + (data.band.transition_duration || 0))}`;
 
       return (
-        <div key={data.band.id} className={styles.row}>
-          <div className={styles.timeCell}>{timeText}</div>
-          <div
-            className={data.band.is_break ? styles.breakCell : styles.bandCell}
-          >
-            {bandText}
+        <div key={data.band.id}>
+          <div className={styles.row}>
+            <div className={styles.timeCell}>{timeText}</div>
+            <div
+              className={
+                data.band.is_break ? styles.breakCell : styles.bandCell
+              }
+            >
+              {bandText}
+            </div>
           </div>
+          {(data.band.transition_duration ?? 0) > 0 && (
+            <div className={styles.row}>
+              <div className={styles.timeCell}>
+                <p>{transitionTimeText}</p>
+              </div>
+              <div className={styles.bandCell}>{transitionText}</div>
+            </div>
+          )}
         </div>
       );
     });

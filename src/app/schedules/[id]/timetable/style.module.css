@@ -1,0 +1,94 @@
+.page {
+  min-height: 100vh;
+  background-color: #f9fafb;
+  padding: 24px 44px;
+}
+
+.card {
+  max-width: 1120px;
+  margin: 0 auto;
+  background-color: #ffffff;
+  box-shadow:
+    0 10px 15px rgba(0, 0, 0, 0.1),
+    0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.header {
+  height: 54px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #d1d5dc;
+  font-size: 30px;
+  font-weight: 500;
+  line-height: 1;
+  color: #0a0a0a;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(var(--column-count, 1), minmax(0, 1fr));
+  border-left: 1px solid #d1d5dc;
+  border-right: 1px solid #d1d5dc;
+  border-bottom: 1px solid #d1d5dc;
+}
+
+.column {
+  border-right: 1px solid #d1d5dc;
+}
+
+.column:last-child {
+  border-right: 0;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr);
+  min-height: 41px;
+  border-bottom: 1px solid #d1d5dc;
+}
+
+.timeCell {
+  padding: 8px;
+  border-right: 1px solid #d1d5dc;
+  background-color: #fffbeb;
+  color: #0a0a0a;
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.bandCell,
+.breakCell {
+  padding: 8px;
+  color: #0a0a0a;
+  font-size: 14px;
+  line-height: 20px;
+  word-break: break-word;
+}
+
+.bandCell {
+  background-color: #ffffff;
+}
+
+.breakCell {
+  background-color: #f3f4f6;
+}
+
+@media (max-width: 900px) {
+  .page {
+    padding: 16px;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .column {
+    border-right: 0;
+    border-bottom: 1px solid #d1d5dc;
+  }
+
+  .column:last-child {
+    border-bottom: 0;
+  }
+}

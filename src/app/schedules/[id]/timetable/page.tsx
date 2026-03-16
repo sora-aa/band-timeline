@@ -1,5 +1,7 @@
 import { TimetableRow } from "@/types";
 import { createClient } from "@supabase/supabase-js";
+import type { CSSProperties } from "react";
+import styles from "./style.module.css";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -30,6 +32,10 @@ export default async function TimetablePage({
     return <div>データが見つかりません</div>;
   }
 
+  if (!schedule.start_time) {
+    return <div>開始時間が設定されていません</div>;
+  }
+
   const [hour, minute] = schedule.start_time.split(":").map(Number);
 
   const minutesToTime = (minutes: number): string => {
@@ -37,6 +43,14 @@ export default async function TimetablePage({
     const m = minutes % 60;
     return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
   };
+
+  const displayDate = new Date(schedule.start_date).toLocaleDateString(
+    "ja-JP",
+    {
+      month: "numeric",
+      day: "numeric",
+    },
+  );
 
   let startTime = hour * 60 + minute;
   const timetableData: TimetableRow[] = [];
@@ -50,28 +64,54 @@ export default async function TimetablePage({
     startTime = endTime + (band.transition_duration ?? 0);
   }
 
+  // 1カラムに収める最大行数。行が増えたときのみ列を追加する
+  const maxRowsPerColumn = 12;
+  const columnCount = Math.max(
+    1,
+    Math.ceil(timetableData.length / maxRowsPerColumn),
+  );
+
+  // 列ごとに表示する行データを分割
+  const columns = Array.from({ length: columnCount }, (_, index) => {
+    const startIndex = index * maxRowsPerColumn;
+    return timetableData.slice(startIndex, startIndex + maxRowsPerColumn);
+  });
+
+  // CSS変数で列数を渡し、CSS Modules側でrepeatに使用する
+  const gridStyle = {
+    "--column-count": columnCount,
+  } as CSSProperties;
+
+  const renderColumn = (rows: TimetableRow[]) => {
+    return rows.map((data) => {
+      const timeText = `${data.start_time}-${data.end_time}`;
+      const bandText = `${data.band.band_name} (${data.band.duration_minutes}分)`;
+
+      return (
+        <div key={data.band.id} className={styles.row}>
+          <div className={styles.timeCell}>{timeText}</div>
+          <div
+            className={data.band.is_break ? styles.breakCell : styles.bandCell}
+          >
+            {bandText}
+          </div>
+        </div>
+      );
+    });
+  };
+
   return (
-    <div>
-      <table>
-        <thead>
-          <tr>
-            <th>開始時刻</th>
-            <th>終了時刻</th>
-            <th>バンド名</th>
-          </tr>
-        </thead>
-        <tbody>
-          {timetableData.map((data) => (
-            <tr key={data.band.id}>
-              <td>{data.start_time}</td>
-              <td>{data.end_time}</td>
-              <td>
-                {data.band.band_name} {data.band.is_break && "(休憩)"}
-              </td>
-            </tr>
+    <div className={styles.page}>
+      <div className={styles.card}>
+        <header className={styles.header}>{displayDate}</header>
+        <section className={styles.grid} style={gridStyle}>
+          {columns.map((rows, index) => (
+            <div key={index} className={styles.column}>
+              {renderColumn(rows)}
+            </div>
           ))}
-        </tbody>
-      </table>
+        </section>
+      </div>
     </div>
   );
 }

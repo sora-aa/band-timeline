@@ -43,3 +43,9 @@ export type Schedule = {
 
 // Band型のフィールド値のユニオン型
 export type BandFieldValue = Band[keyof Band];
+
+export interface TimetableRow {
+  band: Band;
+  start_time: string;
+  end_time: string;
+}

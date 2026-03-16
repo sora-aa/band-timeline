@@ -138,7 +138,7 @@ export default function TimetableEditor() {
       duration_minutes: 10,
       is_break: true,
       sort_order: null,
-      transition_duration: null,
+      transition_duration: 0,
     };
 
     const { data, error } = await supabase
@@ -247,14 +247,22 @@ export default function TimetableEditor() {
       for (const item of updates) {
         await supabase
           .from("bands")
-          .update({ sort_order: item.sort_order })
+          .update({
+            sort_order: item.sort_order,
+            duration_minutes: item.duration_minutes,
+            transition_duration: item.transition_duration,
+          })
           .eq("id", item.id);
       }
       // 未配置のバンドも1つずつ更新
       for (const item of resets) {
         await supabase
           .from("bands")
-          .update({ sort_order: null })
+          .update({
+            sort_order: null,
+            duration_minutes: item.duration_minutes,
+            transition_duration: item.transition_duration,
+          })
           .eq("id", item.id);
       }
 

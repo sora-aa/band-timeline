@@ -1,15 +1,12 @@
 "use client";
 
-import { createClient } from "@supabase/supabase-js";
+import { createClient } from "@/utils/supabase/client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import styles from "./style.module.css";
 import Link from "next/link";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+const supabase = createClient();
 
 export default function CreateSchedulePage() {
   const router = useRouter(); // 保存成功後にページを移動させるために使用

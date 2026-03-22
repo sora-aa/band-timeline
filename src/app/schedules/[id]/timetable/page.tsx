@@ -1,18 +1,14 @@
 import { TimetableRow } from "@/types";
-import { createClient } from "@supabase/supabase-js";
+import { createClient } from "@/utils/supabase/server";
 import type { CSSProperties } from "react";
 import styles from "./style.module.css";
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-);
 
 export default async function TimetablePage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
+  const supabase = await createClient();
   const scheduleId = (await params).id;
 
   const { data: schedule } = await supabase

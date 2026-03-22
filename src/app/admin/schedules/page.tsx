@@ -1,6 +1,6 @@
 "use client";
 
-import { createClient } from "@supabase/supabase-js";
+import { createClient } from "@/utils/supabase/client";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Schedule } from "@/types";
@@ -8,10 +8,7 @@ import styles from "./style.module.css";
 
 // supabaseへの接続をする
 // 関数内に書くと画面が描画されるたびに接続がリセットされてしまうため、関数の外側に書いています
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+const supabase = createClient();
 
 export default function AdminScheduleListPage() {
   const [schedules, setSchedules] = useState<Schedule[]>([]); // 取得したスケジュールを入れておく箱
@@ -83,13 +80,15 @@ export default function AdminScheduleListPage() {
   // フォームまたはタイムテーブルの公開・非公開を切り替える関数
   const toggleStatus = async (
     schedule: Schedule,
-    column: "is_form_open" | "is_timetable_open"
+    column: "is_form_open" | "is_timetable_open",
   ) => {
     const newValue = !schedule[column]; // 現在の値の反対をセット true→false、false→true
 
     // 画面上の表示はすぐに更新
     setSchedules((prev) =>
-      prev.map((s) => (s.id === schedule.id ? { ...s, [column]: newValue } : s))
+      prev.map((s) =>
+        s.id === schedule.id ? { ...s, [column]: newValue } : s,
+      ),
     );
 
     // supabaseのデータは後から更新

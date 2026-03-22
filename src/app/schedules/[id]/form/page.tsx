@@ -1,15 +1,12 @@
 "use client";
 
-import { createClient } from "@supabase/supabase-js";
+import { createClient } from "@/utils/supabase/client";
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { Schedule, QuestionAnswer, QuestionField } from "@/types";
 import styles from "./style.module.css";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+const supabase = createClient();
 
 export default function PublicFormPage() {
   const params = useParams();

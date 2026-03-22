@@ -1,26 +1,5 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-## Supabase / Googleログイン設定
-
-`.env.local` に以下を設定してください。
-
-```bash
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
-# 推奨: Publishable key
-NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your_supabase_publishable_key
-# 互換: まだPublishable keyを使っていない場合
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-# 任意: Proxy配下でx-forwarded-hostを使う場合の許可ホスト（カンマ区切り）
-AUTH_REDIRECT_ALLOWED_HOSTS=example.com,app.example.com
-```
-
-Google OAuth を使う場合は、Supabaseダッシュボードの Google Provider を有効化した上で、Google Cloud 側の OAuth Client に以下を設定してください。
-
-- Authorized JavaScript origins: `http://localhost:3000`（本番URLも追加）
-- Authorized redirect URI: Supabaseの Google Provider 画面に表示される Callback URL
-
-また、Supabase Auth の Redirect URLs に `http://localhost:3000/auth/callback`（本番URLも追加）を含めてください。
-
 ## Getting Started
 
 First, run the development server:

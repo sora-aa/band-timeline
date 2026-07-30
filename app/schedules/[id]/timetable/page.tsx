@@ -26,6 +26,16 @@ export default async function TimetablePage({
     return <div>データが見つかりません</div>;
   }
 
+  // タイムテーブルが公開されていない場合は非公開のメッセージを表示
+  if (!schedule.is_timetable_open) {
+    return (
+      <div className="mx-auto my-10 max-w-[600px] rounded-lg bg-gray-100 p-10 text-center">
+        <h2>非公開</h2>
+        <p>現在、タイムテーブルは公開されていません</p>
+      </div>
+    );
+  }
+
   if (!schedule.start_time) {
     return <div>開始時間が設定されていません</div>;
   }
@@ -41,13 +51,10 @@ export default async function TimetablePage({
     return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
   };
 
-  const displayDate = new Date(schedule.start_date).toLocaleDateString(
-    "ja-JP",
-    {
-      month: "numeric",
-      day: "numeric",
-    },
-  );
+  // 日付表示を「YY/MM/DD」形式にフォーマット
+  const displayDate = new Date(schedule.start_date)
+    .toLocaleDateString("ja-JP")
+    .slice(2);
 
   let startTime = timeToMinutes(schedule.start_time);
   const timetableData: TimetableRow[] = [];

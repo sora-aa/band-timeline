@@ -1,36 +1,101 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# band-timeline
 
-## Getting Started
+軽音サークルのライブ運営を支援する Web アプリです。
+幹部が日程（イベント）ごとに出演申し込みフォームを作り、集まったバンド情報を並べ替えてタイムテーブルを作成・公開します。一般メンバーはフォームから出演申し込みをし、公開されたタイムテーブルを閲覧できます。
 
-First, run the development server:
+## できること
+
+### 幹部（運営側）
+
+- 日程（イベント）の作成・削除
+- 日程ごとの申し込みフォームの作成・編集（質問項目を自由に追加できます）
+- 集まったバンドをドラッグ＆ドロップで並べ替え、転換時間を設定してタイムテーブルを作成
+- フォーム／タイムテーブルの公開・非公開の切り替え
+
+### 一般メンバー
+
+- 公開中のフォームから出演申し込み（代表者名・バンド名・演奏時間＋幹部が追加した質問に回答）
+- 公開中のタイムテーブルの閲覧
+
+> フォーム・タイムテーブルは幹部が「公開」にしている間だけ表示されます。非公開のときは案内メッセージが出ます。
+
+> **ログインについて**: `/login`・`/auth` を除くすべてのページで Google ログインが必要です。フォーム回答やタイムテーブル閲覧も含め、未ログインの場合はログイン画面にリダイレクトされます。
+
+## 画面構成
+
+`/login`・`/auth` 以外はすべてログインが必要です（「認証」列を参照）。
+
+| URL | 役割 | 主な利用者 | 認証 |
+| --- | --- | --- | --- |
+| `/` | ホーム | 全員 | 必要 |
+| `/login` | Google ログイン | 全員 | 不要 |
+| `/auth/callback` | ログイン後のコールバック処理 | （システム） | 不要 |
+| `/admin/schedules` | 日程一覧・管理 | 幹部 | 必要 |
+| `/admin/schedules/new` | 日程の新規作成 | 幹部 | 必要 |
+| `/admin/schedules/[id]/edit-form` | フォーム編集 | 幹部 | 必要 |
+| `/admin/schedules/[id]/timetable` | タイムテーブル編集 | 幹部 | 必要 |
+| `/schedules/[id]/form` | 出演申し込みフォーム | 一般メンバー | 必要 |
+| `/schedules/[id]/timetable` | タイムテーブル閲覧 | 一般メンバー | 必要 |
+
+## 技術スタック
+
+- [Next.js](https://nextjs.org) 16（App Router）/ React 19 / TypeScript
+- [Supabase](https://supabase.com)（データベース・認証）
+- [Tailwind CSS](https://tailwindcss.com) v4
+- [dnd-kit](https://dndkit.com)（タイムテーブルのドラッグ＆ドロップ）
+
+## 開発環境のセットアップ
+
+### 1. 必要なもの
+
+- Node.js 20 以上
+- Supabase プロジェクト（幹部の代表者に接続情報を確認してください）
+
+### 2. 依存パッケージのインストール
+
+```bash
+npm install
+```
+
+### 3. 環境変数の設定
+
+プロジェクト直下に `.env.local` を作成し、Supabase の接続情報を設定します。
+
+```bash
+NEXT_PUBLIC_SUPABASE_URL=（Supabase プロジェクトの URL）
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=（Supabase の公開キー）
+```
+
+本番環境では、ログイン後のリダイレクト先を許可するために次の環境変数も設定します（ローカル開発では不要です）。
+
+```bash
+AUTH_REDIRECT_ALLOWED_HOSTS=（許可するホスト名をカンマ区切りで）
+```
+
+### 4. 開発サーバーの起動
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+[http://localhost:3000](http://localhost:3000) をブラウザで開くと動作を確認できます。
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## よく使うコマンド
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| コマンド | 内容 |
+| --- | --- |
+| `npm run dev` | 開発サーバーを起動 |
+| `npm run build` | 本番用にビルド |
+| `npm run start` | ビルド済みアプリを起動 |
+| `npm run lint` | Lint チェック |
 
-## Learn More
+## ログインについて
 
-To learn more about Next.js, take a look at the following resources:
+このアプリは `/login`・`/auth` を除く**すべてのページ**で Google アカウントによるログインが必要です。幹部の管理画面はもちろん、一般メンバーが使うフォーム回答・タイムテーブル閲覧のページも認証必須で、未ログインでアクセスすると自動的にログイン画面へリダイレクトされます（ログイン後は元のページに戻ります）。
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+ログイン可能なアカウントは Supabase 側で制限されています。ログインできない場合は幹部の代表者に連絡してください。
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## データ構成（概要）
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **schedules**: 日程（イベント）。タイトル・開催日・開始時刻・フォーム定義・公開状態を持ちます。
+- **bands**: 各日程への出演申し込み。代表者名・バンド名・演奏時間・並び順・転換時間などを持ちます。フォームで追加された質問の回答は `custom_answers` に保存されます。

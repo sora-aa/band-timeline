@@ -50,16 +50,11 @@ export async function GET(request: Request) {
       await supabase.auth.exchangeCodeForSession(code);
 
     if (!sessionError) {
-      // 環境に応じて安全なリダイレクト先を決定
+      // x-forwarded-host は詐称可能なため、許可リストに一致する場合のみ信用する
       const allowedRedirectHosts = getAllowedRedirectHosts();
       const forwardedHost = normalizeForwardedHost(
         request.headers.get("x-forwarded-host"),
       );
-      const isLocalEnv = process.env.NODE_ENV === "development";
-
-      if (isLocalEnv) {
-        return NextResponse.redirect(`${origin}${next}`);
-      }
 
       if (forwardedHost && allowedRedirectHosts.has(forwardedHost)) {
         return NextResponse.redirect(`https://${forwardedHost}${next}`);

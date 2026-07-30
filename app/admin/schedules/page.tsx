@@ -17,11 +17,11 @@ export default function AdminScheduleListPage() {
   const fetchSchedules = async () => {
     setLoading(true); // 読み込み中に設定
     try {
-      // schedulesテーブルから全てのデータを取得し、開始日の昇順でソート
+      // schedulesテーブルから全てのデータを取得し、開始日の降順でソート
       const { data, error } = await supabase
         .from("schedules") // schedulesテーブルから
         .select("*") // 全てのカラムを取得
-        .order("start_date", { ascending: true }); // 開始日の昇順で並び替え
+        .order("start_date", { ascending: false }); // 開始日の降順で並び替え
 
       if (error) throw error; // エラーがあればcatchブロックへ飛ばす
       setSchedules(data || []); // 取得したデータを状態に保存。dataがnullの場合は空配列をセット
@@ -54,25 +54,22 @@ export default function AdminScheduleListPage() {
     }
   };
 
-  // 日付表示を「MM/DD ～ MM/DD」形式にフォーマットする関数
+  // 日付表示を「YY/MM/DD ～ YY/MM/DD」形式にフォーマットする関数
   const formatDate = (start: string, end: string) => {
     // startが空なら空文字を返す
     if (!start) return "";
 
     const d1 = new Date(start); // 文字列をDateオブジェクトに変換
-
-    // 日本形式の文字列にした後、先頭の年部分を削除
-    // 例: "2024/06/15" → "06/15"
-    const sStr = d1.toLocaleDateString("ja-JP").slice(5);
+    const startDate = d1.toLocaleDateString("ja-JP").slice(2);
 
     if (start === end) {
       // 開始日と終了日が同じ場合は開始日のみ表示
-      return sStr;
+      return startDate;
     } else {
-      // 異なる場合は「MM/DD ～ MM/DD」形式で表示
+      // 異なる場合は「YY/MM/DD ～ YY/MM/DD」形式で表示
       const d2 = new Date(end);
-      const eStr = d2.toLocaleDateString("ja-JP").slice(5);
-      return `${sStr} ～ ${eStr}`;
+      const endDate = d2.toLocaleDateString("ja-JP").slice(2);
+      return `${startDate} ～ ${endDate}`;
     }
   };
 
@@ -129,6 +126,20 @@ export default function AdminScheduleListPage() {
               key={schedule.id}
               className="flex flex-col gap-4 rounded-lg border border-gray-200 bg-white p-5 shadow-sm md:flex-row md:items-center md:justify-between"
             >
+              <div className="flex flex-col gap-2.5">
+                <Link
+                  href={`/schedules/${schedule.id}/form/`}
+                  className="cursor-pointer rounded border border-gray-300 bg-gray-50 px-3 py-2 text-center text-sm text-gray-700 hover:bg-gray-200"
+                >
+                  フォーム回答
+                </Link>
+                <Link
+                  href={`/schedules/${schedule.id}/timetable/`}
+                  className="cursor-pointer rounded border border-gray-300 bg-gray-50 px-3 py-2 text-center text-sm text-gray-700 hover:bg-gray-200"
+                >
+                  タイムテーブル閲覧
+                </Link>
+              </div>
               <div className="flex-1">
                 <h3 className="mb-1 text-lg font-semibold text-gray-800">
                   {schedule.title}
@@ -137,7 +148,9 @@ export default function AdminScheduleListPage() {
                   📅 {formatDate(schedule.start_date, schedule.end_date)}
                 </p>
 
-                <div className="mt-2">
+                {/* フォームが作成済みかどうかを判定して表示する部分
+                そもそもこの判定方法だと一度フォームの編集画面を開いただけで作成済みとして処理される */}
+                {/* <div className="mt-2">
                   {schedule.form_schema && schedule.form_schema.length > 0 ? (
                     <span className="inline-block rounded px-1.5 py-0.5 text-xs text-emerald-700 bg-emerald-100">
                       ✓ フォーム作成済み
@@ -147,7 +160,7 @@ export default function AdminScheduleListPage() {
                       ⚠ フォーム未作成
                     </span>
                   )}
-                </div>
+                </div> */}
               </div>
 
               <div className="flex flex-col gap-1 md:mr-5 md:items-end">
@@ -181,12 +194,21 @@ export default function AdminScheduleListPage() {
               </div>
 
               <div className="flex flex-wrap items-center gap-2.5">
-                <Link
-                  href={`/admin/schedules/${schedule.id}/edit-form/`}
-                  className="cursor-pointer rounded border border-gray-300 bg-gray-50 px-3 py-2 text-sm text-gray-700 hover:bg-gray-200"
-                >
-                  フォーム編集
-                </Link>
+                <div className="flex flex-col gap-2.5">
+                  <Link
+                    href={`/admin/schedules/${schedule.id}/edit-form/`}
+                    className="cursor-pointer rounded border border-gray-300 bg-gray-50 px-3 py-2 text-center text-sm text-gray-700 hover:bg-gray-200"
+                  >
+                    フォーム編集
+                  </Link>
+
+                  <Link
+                    href={`/admin/schedules/${schedule.id}/timetable/`}
+                    className="cursor-pointer rounded border border-gray-300 bg-gray-50 px-3 py-2 text-center text-sm text-gray-700 hover:bg-gray-200"
+                  >
+                    タイムテーブル編集
+                  </Link>
+                </div>
 
                 <button
                   onClick={() => handleDelete(schedule.id)}

@@ -32,6 +32,10 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+# 環境ごとの非機密デフォルトはコミットする（ローカル開発値・本番の公開値）
+!.env.development
+!.env.production
+# .env.local / .env.*.local は個人用・機密のため引き続き無視する
 
 # vercel
 .vercel

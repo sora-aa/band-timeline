@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import { TimetableRow } from "@/types";
 import { createClient } from "@/utils/supabase/server";
 
@@ -68,6 +69,9 @@ export default async function TimetablePage({
     startTime = endTime + (band.transition_duration ?? 0);
   }
 
+  // 最後の出番の後に転換は無いので、その行だけ転換を描画しない
+  const lastBandId = timetableData[timetableData.length - 1]?.band.id;
+
   // 1カラムに収める最大行数。行が増えたときのみ列を追加する
   const maxRowsPerColumn = 12;
   const columnCount = Math.max(
@@ -75,15 +79,22 @@ export default async function TimetablePage({
     Math.ceil(timetableData.length / maxRowsPerColumn),
   );
 
+  // 先頭の列だけを上限まで詰めると列の高さが大きく偏るため、全列へ均等に配る
+  // （例: 20組を12/8ではなく10/10に分ける）
+  const rowsPerColumn = Math.ceil(timetableData.length / columnCount);
+
   // 列ごとに表示する行データを分割
   const columns = Array.from({ length: columnCount }, (_, index) => {
-    const startIndex = index * maxRowsPerColumn;
-    return timetableData.slice(startIndex, startIndex + maxRowsPerColumn);
+    const startIndex = index * rowsPerColumn;
+    return timetableData.slice(startIndex, startIndex + rowsPerColumn);
   });
 
+  // grid-template-columns を直接インラインで指定すると、狭い画面で1列に戻す
+  // クラス（max-[900px]:grid-cols-1）がインラインstyleに負けてしまう。
+  // 列数だけをCSS変数で渡し、実際の指定はクラス側に任せる
   const gridStyle = {
-    gridTemplateColumns: `repeat(${columnCount}, minmax(0, 1fr))`,
-  };
+    "--timetable-columns": String(columnCount),
+  } as CSSProperties;
 
   const renderColumn = (rows: TimetableRow[]) => {
     return rows.map((data) => {
@@ -108,16 +119,17 @@ export default async function TimetablePage({
               {bandText}
             </div>
           </div>
-          {(data.band.transition_duration ?? 0) > 0 && (
-            <div className="grid min-h-[41px] grid-cols-[120px_minmax(0,1fr)] border-b border-gray-300">
-              <div className="border-r border-gray-300 bg-amber-50 p-2 text-sm leading-5 text-black">
-                <p>{transitionTimeText}</p>
+          {data.band.id !== lastBandId &&
+            (data.band.transition_duration ?? 0) > 0 && (
+              <div className="grid min-h-[41px] grid-cols-[120px_minmax(0,1fr)] border-b border-gray-300">
+                <div className="border-r border-gray-300 bg-amber-50 p-2 text-sm leading-5 text-black">
+                  <p>{transitionTimeText}</p>
+                </div>
+                <div className="break-words bg-white p-2 text-sm leading-5 text-black">
+                  {transitionText}
+                </div>
               </div>
-              <div className="break-words bg-white p-2 text-sm leading-5 text-black">
-                {transitionText}
-              </div>
-            </div>
-          )}
+            )}
         </div>
       );
     });
@@ -130,7 +142,7 @@ export default async function TimetablePage({
           {displayDate}
         </header>
         <section
-          className="grid border-b border-l border-r border-gray-300 max-[900px]:grid-cols-1"
+          className="grid grid-cols-[repeat(var(--timetable-columns),minmax(0,1fr))] border-b border-l border-r border-gray-300 max-[900px]:grid-cols-1"
           style={gridStyle}
         >
           {columns.map((rows, index) => (

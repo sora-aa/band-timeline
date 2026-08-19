@@ -702,6 +702,7 @@ export default function TimetableEditor() {
                       compact={compact}
                       onChange={handleBandChange}
                       onUnschedule={(id) => moveBand(id, "unscheduled")}
+                      onDelete={band.is_break ? deleteBreak : undefined}
                     />
                   ))}
                 </SortableContext>

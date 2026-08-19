@@ -3,7 +3,7 @@
 import clsx from "clsx";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Coffee, GripVertical, Undo2 } from "lucide-react";
+import { Coffee, GripVertical, Trash2, Undo2 } from "lucide-react";
 import { Band, BandFieldValue } from "@/types";
 import { MinuteInput } from "./MinuteInput";
 
@@ -17,6 +17,7 @@ interface ScheduledRowProps {
   transition?: { start: string; end: string };
   onChange: (id: string, field: keyof Band, value: BandFieldValue) => void;
   onUnschedule: (id: string) => void;
+  onDelete?: (id: string) => void;
   /** 転換帯を畳んで1行あたりの高さを詰める（出演数が多いとき用） */
   compact?: boolean;
   /** ドラッグ中に指へ追従している複製かどうか */
@@ -31,6 +32,7 @@ export function ScheduledRow({
   transition,
   onChange,
   onUnschedule,
+  onDelete,
   compact = false,
   isOverlay = false,
 }: ScheduledRowProps) {
@@ -150,16 +152,30 @@ export function ScheduledRow({
             )}
           </span>
 
-          {/* 未配置に戻す */}
-          <button
+          {/* 未配置に戻す・休憩枠を削除する */}
+          <div className="col-start-3 row-start-1 flex justify-self-end md:col-start-5">
+            <button
             type="button"
             onClick={() => onUnschedule(band.id)}
             aria-label={`${band.band_name} を未配置に戻す`}
             title="未配置に戻す"
-            className="col-start-3 row-start-1 flex h-7 w-7 items-center justify-center justify-self-end rounded text-gray-300 hover:bg-gray-100 hover:text-gray-600 md:col-start-5"
-          >
-            <Undo2 size={14} />
+            className="flex h-7 w-7 items-center justify-center rounded text-gray-300 hover:bg-gray-100 hover:text-gray-600"
+  >
+              <Undo2 size={14} />
           </button>
+
+  {band.is_break && onDelete && (
+    <button
+      type="button"
+      onClick={() => onDelete(band.id)}
+      aria-label={`${band.band_name} を削除する`}
+      title="削除"
+      className="flex h-7 w-7 items-center justify-center rounded text-gray-300 hover:bg-red-50 hover:text-red-600"
+    >
+      <Trash2 size={14} />
+    </button>
+  )}
+          </div>
         </div>
       </div>
 

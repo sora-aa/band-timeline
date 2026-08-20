@@ -155,26 +155,26 @@ export function ScheduledRow({
           {/* 未配置に戻す・休憩枠を削除する */}
           <div className="col-start-3 row-start-1 flex justify-self-end md:col-start-5">
             <button
-            type="button"
-            onClick={() => onUnschedule(band.id)}
-            aria-label={`${band.band_name} を未配置に戻す`}
-            title="未配置に戻す"
-            className="flex h-7 w-7 items-center justify-center rounded text-gray-300 hover:bg-gray-100 hover:text-gray-600"
-  >
+              type="button"
+              onClick={() => onUnschedule(band.id)}
+              aria-label={`${band.band_name} を未配置に戻す`}
+              title="未配置に戻す"
+              className="flex h-7 w-7 items-center justify-center rounded text-gray-300 hover:bg-gray-100 hover:text-gray-600"
+            >
               <Undo2 size={14} />
-          </button>
+            </button>
 
-  {band.is_break && onDelete && (
-    <button
-      type="button"
-      onClick={() => onDelete(band.id)}
-      aria-label={`${band.band_name} を削除する`}
-      title="削除"
-      className="flex h-7 w-7 items-center justify-center rounded text-gray-300 hover:bg-red-50 hover:text-red-600"
-    >
-      <Trash2 size={14} />
-    </button>
-  )}
+            {band.is_break && onDelete && (
+              <button
+                type="button"
+                onClick={() => onDelete(band.id)}
+                aria-label={`${band.band_name} を削除する`}
+                title="削除"
+                className="flex h-7 w-7 items-center justify-center rounded text-gray-300 hover:bg-red-50 hover:text-red-600"
+              >
+                <Trash2 size={14} />
+              </button>
+            )}
           </div>
         </div>
       </div>

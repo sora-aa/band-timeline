@@ -161,6 +161,8 @@ export default function PublicFormPage() {
             {q.type === "number" && (
               <input
                 type="number"
+                min={q.id === "fixed-3" ? 0 : undefined}
+                step={q.id === "fixed-3" ? 1 : undefined}
                 required={q.required}
                 onChange={(e) => handleAnswerChange(q.id, e.target.value)}
                 className="rounded-md border border-gray-300 p-3 text-base"

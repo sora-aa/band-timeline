@@ -18,6 +18,7 @@ export interface QuestionField {
 
 export interface Band {
   id: string;
+  schedule_day_id: string | null;
   representative_name: string;
   band_name: string;
   duration_minutes: number;
@@ -38,6 +39,12 @@ export type Schedule = {
   form_schema: QuestionField[];
   is_form_open: boolean;
   is_timetable_open: boolean;
+};
+
+export type ScheduleDay = {
+  id: string;
+  schedule_id: string;
+  date: string;
   start_time: string | null;
 };
 

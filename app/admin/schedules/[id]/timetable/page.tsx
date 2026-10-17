@@ -1,7 +1,14 @@
 "use client";
 
 import { createClient } from "@/utils/supabase/client";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type SetStateAction,
+} from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import {
@@ -34,7 +41,7 @@ import {
   Rows3,
   Save,
 } from "lucide-react";
-import { Band, BandFieldValue } from "@/types";
+import { Band, BandFieldValue, ScheduleDay } from "@/types";
 import { ScheduledRow } from "@/components/admin/timetable/ScheduledRow";
 import { UnscheduledCard } from "@/components/admin/timetable/UnscheduledCard";
 
@@ -44,6 +51,7 @@ const supabase = createClient();
 // リスト間の移動を1回のsetStateで完結させたいのでオブジェクトにしている
 type ColumnId = "unscheduled" | "scheduled";
 type Columns = Record<ColumnId, Band[]>;
+type EditorBands = { unscheduled: Band[]; byDay: Record<string, Band[]> };
 
 const DEFAULT_START_TIME = "10:00";
 
@@ -143,12 +151,50 @@ export default function TimetableEditor() {
   const params = useParams();
   const scheduleId = params.id as string;
 
-  const [columns, setColumns] = useState<Columns>({
+  const [editorBands, setEditorBands] = useState<EditorBands>({
     unscheduled: [],
-    scheduled: [],
+    byDay: {},
   });
+  const [days, setDays] = useState<ScheduleDay[]>([]);
+  const [activeDayId, setActiveDayId] = useState("");
+  const [version, setVersion] = useState(0);
+  const [deletedBreakIds, setDeletedBreakIds] = useState<string[]>([]);
+  const persistedBandIds = useRef(new Set<string>());
+  const [loadError, setLoadError] = useState("");
+  const [saveError, setSaveError] = useState("");
   const [scheduleTitle, setScheduleTitle] = useState("");
-  const [startTime, setStartTime] = useState(DEFAULT_START_TIME);
+  const activeDay = days.find((day) => day.id === activeDayId);
+  const startTime = activeDay?.start_time?.slice(0, 5) ?? "";
+  const setStartTime = (value: string) =>
+    setDays((prev) =>
+      prev.map((day) =>
+        day.id === activeDayId ? { ...day, start_time: value || null } : day,
+      ),
+    );
+  const columns = useMemo<Columns>(
+    () => ({
+      unscheduled: editorBands.unscheduled,
+      scheduled: editorBands.byDay[activeDayId] ?? [],
+    }),
+    [editorBands, activeDayId],
+  );
+  // ドラッグ操作は選択中の日だけを更新し、他の日の編集中データを保持する。
+  const setColumns = useCallback(
+    (action: SetStateAction<Columns>) => {
+      setEditorBands((prev) => {
+        const current = {
+          unscheduled: prev.unscheduled,
+          scheduled: prev.byDay[activeDayId] ?? [],
+        };
+        const next = typeof action === "function" ? action(current) : action;
+        return {
+          unscheduled: next.unscheduled,
+          byDay: { ...prev.byDay, [activeDayId]: next.scheduled },
+        };
+      });
+    },
+    [activeDayId],
+  );
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -177,47 +223,59 @@ export default function TimetableEditor() {
   );
 
   useEffect(() => {
+    let cancelled = false;
     const load = async () => {
       setLoading(true);
-
-      const [scheduleResult, bandsResult] = await Promise.all([
-        supabase
+      setLoadError("");
+      try {
+        // 関連データを1リクエストで読み、versionと配置の取得時点をそろえる。
+        const { data, error } = await supabase
           .from("schedules")
-          .select("title, start_time")
+          .select("title, timetable_version, schedule_days(*), bands(*)")
           .eq("id", scheduleId)
-          .single(),
-        supabase
-          .from("bands")
-          .select("*")
-          .eq("schedule_id", scheduleId)
-          .order("sort_order", { ascending: true }),
-      ]);
-
-      if (scheduleResult.data) {
-        setScheduleTitle(scheduleResult.data.title ?? "");
-        // DBには "HH:MM:SS" で入っているので input[type=time] 用に "HH:MM" へ削る
-        setStartTime(
-          scheduleResult.data.start_time?.slice(0, 5) || DEFAULT_START_TIME,
+          .single();
+        if (error) throw error;
+        if (cancelled) return;
+        const loadedDays = (data.schedule_days as ScheduleDay[]).sort((a, b) =>
+          a.date.localeCompare(b.date),
         );
-      }
-
-      if (bandsResult.error) {
-        showToast("error", "データの読み込みに失敗しました");
-      } else if (bandsResult.data) {
-        const bands = bandsResult.data as Band[];
-        setColumns({
-          // sort_orderがnullのものが未配置
-          unscheduled: bands.filter((b) => b.sort_order === null),
-          scheduled: bands.filter((b) => b.sort_order !== null),
+        if (!loadedDays.length)
+          throw new Error(
+            "開催日がありません。DBのマイグレーションを確認してください",
+          );
+        const bands = data.bands as Band[];
+        setScheduleTitle(data.title);
+        setVersion(data.timetable_version);
+        setDays(loadedDays);
+        setActiveDayId(loadedDays[0].id);
+        persistedBandIds.current = new Set(bands.map((band) => band.id));
+        setDeletedBreakIds([]);
+        setEditorBands({
+          unscheduled: bands.filter((band) => band.schedule_day_id === null),
+          byDay: Object.fromEntries(
+            loadedDays.map((day) => [
+              day.id,
+              bands
+                .filter((band) => band.schedule_day_id === day.id)
+                .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0)),
+            ]),
+          ),
         });
+        setDirty(false);
+      } catch (error) {
+        if (!cancelled)
+          setLoadError(
+            `読み込みに失敗しました: ${error instanceof Error ? error.message : "DBの接続とマイグレーションを確認してください"}`,
+          );
+      } finally {
+        if (!cancelled) setLoading(false);
       }
-
-      setDirty(false);
-      setLoading(false);
     };
-
     load();
-  }, [scheduleId, showToast]);
+    return () => {
+      cancelled = true;
+    };
+  }, [scheduleId]);
 
   // 前回選んだ表示密度を復元する（サーバー描画と食い違わないよう描画後に読む）
   useEffect(() => {
@@ -325,45 +383,50 @@ export default function TimetableEditor() {
     setDirty(true);
   };
 
-  const addBreak = async () => {
-    const { data, error } = await supabase
-      .from("bands")
-      .insert({
-        schedule_id: scheduleId,
-        band_name: "休憩",
-        representative_name: "",
-        duration_minutes: 10,
-        is_break: true,
-        sort_order: null,
-        transition_duration: 0,
-      })
-      .select()
-      .single();
-
-    if (error || !data) {
-      showToast("error", "追加に失敗しました");
-      return;
-    }
-
+  const addBreak = () => {
+    const band: Band = {
+      id: crypto.randomUUID(),
+      schedule_day_id: null,
+      band_name: "休憩",
+      representative_name: "",
+      duration_minutes: 10,
+      is_break: true,
+      sort_order: null,
+      transition_duration: 0,
+    };
     setColumns((prev) => ({
       ...prev,
-      unscheduled: [...prev.unscheduled, data as Band],
+      scheduled: [...prev.scheduled, band],
     }));
+    setDirty(true);
   };
 
-  const deleteBreak = async (id: string) => {
+  const deleteBreak = (id: string) => {
     if (!window.confirm("この枠を削除しますか？")) return;
-
-    const { error } = await supabase.from("bands").delete().eq("id", id);
-    if (error) {
-      showToast("error", "削除に失敗しました");
-      return;
-    }
-
+    if (persistedBandIds.current.has(id))
+      setDeletedBreakIds((prev) => [...prev, id]);
     setColumns((prev) => ({
       unscheduled: prev.unscheduled.filter((b) => b.id !== id),
       scheduled: prev.scheduled.filter((b) => b.id !== id),
     }));
+    setDirty(true);
+  };
+
+  const moveToDay = (id: string, targetDayId: string) => {
+    setEditorBands((prev) => {
+      const source = prev.byDay[activeDayId] ?? [];
+      const band = source.find((item) => item.id === id);
+      if (!band || targetDayId === activeDayId) return prev;
+      return {
+        ...prev,
+        byDay: {
+          ...prev.byDay,
+          [activeDayId]: source.filter((item) => item.id !== id),
+          [targetDayId]: [...(prev.byDay[targetDayId] ?? []), band],
+        },
+      };
+    });
+    setDirty(true);
   };
 
   // handleDragOver はドラッグ中に実際にリストを書き換えるため、
@@ -408,8 +471,7 @@ export default function TimetableEditor() {
       if (overIndex !== -1) {
         const activeRect = active.rect.current.translated;
         const isBelowOverItem =
-          !!activeRect &&
-          activeRect.top > over.rect.top + over.rect.height / 2;
+          !!activeRect && activeRect.top > over.rect.top + over.rect.height / 2;
         insertAt = overIndex + (isBelowOverItem ? 1 : 0);
       }
 
@@ -453,45 +515,57 @@ export default function TimetableEditor() {
   };
 
   const handleSave = async () => {
+    if (saving || loading || loadError || !days.length) return;
     setSaving(true);
+    setSaveError("");
 
     try {
+      const serializeBand = (
+        band: Band,
+        dayId: string | null,
+        index: number | null,
+      ) => ({
+        id: band.id,
+        schedule_day_id: dayId,
+        sort_order: index,
+        band_name: band.band_name,
+        duration_minutes: band.duration_minutes ?? 0,
+        transition_duration: band.transition_duration ?? 0,
+        is_new_break: !persistedBandIds.current.has(band.id) && band.is_break,
+      });
       const updates = [
-        ...columns.scheduled.map((band, index) => ({
-          id: band.id,
-          sort_order: index,
-          band_name: band.band_name,
-          duration_minutes: band.duration_minutes ?? 0,
-          transition_duration: band.transition_duration ?? 0,
-        })),
-        ...columns.unscheduled.map((band) => ({
-          id: band.id,
-          sort_order: null,
-          band_name: band.band_name,
-          duration_minutes: band.duration_minutes ?? 0,
-          transition_duration: band.transition_duration ?? 0,
-        })),
-      ];
-
-      const results = await Promise.all([
-        ...updates.map(({ id, ...values }) =>
-          supabase.from("bands").update(values).eq("id", id),
+        ...days.flatMap((day) =>
+          (editorBands.byDay[day.id] ?? []).map((band, index) =>
+            serializeBand(band, day.id, index),
+          ),
         ),
-        supabase
-          .from("schedules")
-          .update({ start_time: `${startTime || DEFAULT_START_TIME}:00` })
-          .eq("id", scheduleId),
-      ]);
-
-      const failed = results.find((result) => result.error);
-      if (failed?.error) throw failed.error;
-
+        ...editorBands.unscheduled.map((band) =>
+          serializeBand(band, null, null),
+        ),
+      ];
+      const { data, error } = await supabase.rpc("save_timetable", {
+        p_schedule_id: scheduleId,
+        p_version: version,
+        p_days: days.map((day) => ({
+          id: day.id,
+          start_time: day.start_time || null,
+        })),
+        p_bands: updates,
+        p_deleted_break_ids: deletedBreakIds,
+      });
+      if (error) throw error;
+      setVersion(data);
+      persistedBandIds.current = new Set(updates.map((band) => band.id));
+      setDeletedBreakIds([]);
       setDirty(false);
-      showToast("success", "タイムテーブルを保存しました");
+      showToast("success", "すべての日程を保存しました");
     } catch (err: unknown) {
       const message =
-        err instanceof Error ? err.message : "不明なエラーが発生しました";
+        err && typeof err === "object" && "message" in err
+          ? String(err.message)
+          : "不明なエラーが発生しました";
       console.error(err);
+      setSaveError(`保存に失敗しました: ${message}`);
       showToast("error", `保存に失敗しました: ${message}`);
     } finally {
       setSaving(false);
@@ -502,8 +576,29 @@ export default function TimetableEditor() {
     columns.unscheduled.find((b) => b.id === activeId) ||
     columns.scheduled.find((b) => b.id === activeId);
 
+  if (loading) return <p className="p-10 text-center">読み込み中...</p>;
+  if (loadError)
+    return (
+      <div className="p-10 text-center">
+        <p role="alert" className="text-red-600">
+          {loadError}
+        </p>
+        <button
+          type="button"
+          onClick={() => window.location.reload()}
+          className="mt-4 rounded border px-4 py-2"
+        >
+          再読み込み
+        </button>
+      </div>
+    );
+
   return (
-    <div className="flex min-h-screen flex-col bg-gray-100 md:h-screen md:flex-row">
+    <fieldset
+      disabled={saving}
+      aria-busy={saving}
+      className="m-0 flex min-h-screen min-w-0 flex-col border-0 bg-gray-100 p-0 md:h-screen md:flex-row"
+    >
       <DndContext
         sensors={sensors}
         collisionDetection={closestCorners}
@@ -531,7 +626,7 @@ export default function TimetableEditor() {
               </span>
             </div>
             <p className="mt-1 text-[11px] leading-4 text-gray-400">
-              つまみをドラッグして右のタイムテーブルへ配置します
+              全日程共通の未配置リストです。選択中の日に配置します
             </p>
 
             <button
@@ -540,7 +635,7 @@ export default function TimetableEditor() {
               className="mt-2.5 flex w-full cursor-pointer items-center justify-center gap-1 rounded-md border border-dashed border-amber-400 bg-amber-50 px-3 py-2 text-xs font-bold text-amber-700 hover:bg-amber-100"
             >
               <Plus size={14} />
-              休憩・自由枠を追加
+              選択中の日に休憩・自由枠を追加
             </button>
           </div>
 
@@ -575,6 +670,14 @@ export default function TimetableEditor() {
         {/* メイン: 作成中のタイムテーブル */}
         <main className="flex min-w-0 flex-1 flex-col md:h-screen">
           <header className="z-10 shrink-0 border-b border-gray-200 bg-white">
+            {saveError && (
+              <p
+                role="alert"
+                className="border-b border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+              >
+                {saveError}
+              </p>
+            )}
             <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 md:px-6">
               <div className="min-w-0">
                 <h1 className="truncate text-lg font-bold text-gray-900">
@@ -611,20 +714,52 @@ export default function TimetableEditor() {
                 <button
                   type="button"
                   onClick={handleSave}
-                  disabled={saving}
+                  disabled={saving || !!activeId}
                   className="flex cursor-pointer items-center gap-1.5 rounded-md bg-blue-600 px-5 py-2.5 text-sm font-bold text-white shadow-sm hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300"
                 >
                   <Save size={16} />
-                  {saving ? "保存中..." : "保存する"}
+                  {saving ? "保存中..." : "全日程を保存"}
                 </button>
               </div>
             </div>
+
+            <nav
+              aria-label="編集する開催日"
+              className="flex gap-2 overflow-x-auto border-t border-gray-100 px-4 py-3 md:px-6"
+            >
+              {days.map((day) => (
+                <button
+                  key={day.id}
+                  type="button"
+                  disabled={!!activeId}
+                  aria-pressed={day.id === activeDayId}
+                  onClick={() => setActiveDayId(day.id)}
+                  className={`shrink-0 rounded-md border px-3 py-2 text-sm font-bold ${day.id === activeDayId ? "border-blue-600 bg-blue-600 text-white" : "border-gray-200 text-gray-600 hover:bg-gray-50"}`}
+                >
+                  {day.date.replaceAll("-", "/")}
+                  <span className="ml-2 text-xs font-normal">
+                    {
+                      (editorBands.byDay[day.id] ?? []).filter(
+                        (band) => !band.is_break,
+                      ).length
+                    }
+                    組
+                  </span>
+                </button>
+              ))}
+            </nav>
+            {!startTime && (
+              <p className="px-4 pb-2 text-xs text-amber-700 md:px-6">
+                開始時刻は未設定です。編集中は仮に10:00から表示します。
+              </p>
+            )}
 
             {/* 開始と終了を一目で確認するためのバー */}
             <div className="grid grid-cols-2 gap-px border-t border-gray-200 bg-gray-200 md:grid-cols-4">
               <StatCell label="開始時刻">
                 <input
                   type="time"
+                  aria-label="選択中の日の開始時刻"
                   value={startTime}
                   onChange={(e) => {
                     setStartTime(e.target.value);
@@ -702,6 +837,10 @@ export default function TimetableEditor() {
                       compact={compact}
                       onChange={handleBandChange}
                       onUnschedule={(id) => moveBand(id, "unscheduled")}
+                      days={days}
+                      activeDayId={activeDayId}
+                      onMoveToDay={moveToDay}
+                      onDelete={band.is_break ? deleteBreak : undefined}
                     />
                   ))}
                 </SortableContext>
@@ -714,7 +853,9 @@ export default function TimetableEditor() {
                   rows.length === 0 && (
                     <div className="flex flex-col items-center gap-2 rounded-xl border-2 border-dashed border-gray-300 bg-white/50 px-6 py-20 text-center text-gray-400">
                       <Inbox size={28} />
-                      <p className="text-sm font-bold">まだ配置されていません</p>
+                      <p className="text-sm font-bold">
+                        まだ配置されていません
+                      </p>
                       <p className="text-xs">
                         左のリストからここへドラッグしてください
                       </p>
@@ -741,6 +882,6 @@ export default function TimetableEditor() {
           {toast.message}
         </div>
       )}
-    </div>
+    </fieldset>
   );
 }

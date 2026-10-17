@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Supabase CLIが起動時に生成するランタイムコードは検査対象外。
+    "supabase/.temp/**",
+    "supabase/.branches/**",
   ]),
 ]);
 

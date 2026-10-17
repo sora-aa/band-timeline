@@ -3,8 +3,8 @@
 import clsx from "clsx";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Coffee, GripVertical, Undo2 } from "lucide-react";
-import { Band, BandFieldValue } from "@/types";
+import { Coffee, GripVertical, Trash2, Undo2 } from "lucide-react";
+import { Band, BandFieldValue, ScheduleDay } from "@/types";
 import { MinuteInput } from "./MinuteInput";
 
 interface ScheduledRowProps {
@@ -17,6 +17,10 @@ interface ScheduledRowProps {
   transition?: { start: string; end: string };
   onChange: (id: string, field: keyof Band, value: BandFieldValue) => void;
   onUnschedule: (id: string) => void;
+  days: ScheduleDay[];
+  activeDayId: string;
+  onMoveToDay: (id: string, dayId: string) => void;
+  onDelete?: (id: string) => void;
   /** 転換帯を畳んで1行あたりの高さを詰める（出演数が多いとき用） */
   compact?: boolean;
   /** ドラッグ中に指へ追従している複製かどうか */
@@ -31,6 +35,10 @@ export function ScheduledRow({
   transition,
   onChange,
   onUnschedule,
+  days,
+  activeDayId,
+  onMoveToDay,
+  onDelete,
   compact = false,
   isOverlay = false,
 }: ScheduledRowProps) {
@@ -110,7 +118,9 @@ export function ScheduledRow({
                   aria-label="枠の名前"
                   placeholder="項目名（例: 休憩）"
                   onPointerDown={(e) => e.stopPropagation()}
-                  onChange={(e) => onChange(band.id, "band_name", e.target.value)}
+                  onChange={(e) =>
+                    onChange(band.id, "band_name", e.target.value)
+                  }
                   className="w-full min-w-0 max-w-64 rounded border border-amber-300 bg-white px-1.5 py-0.5 text-sm font-bold focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                 />
               </span>
@@ -123,6 +133,42 @@ export function ScheduledRow({
                   <span className="hidden truncate text-xs text-gray-400 sm:inline">
                     {band.representative_name}
                   </span>
+                )}
+              </span>
+            )}
+            {(days.length > 1 || onDelete) && (
+              <span className="mt-1 flex items-center gap-2">
+                {days.length > 1 && (
+                  <select
+                    value=""
+                    aria-label={`${band.band_name} の出演日を変更`}
+                    onChange={(event) =>
+                      onMoveToDay(band.id, event.target.value)
+                    }
+                    className="max-w-full rounded border border-gray-200 bg-white px-1 py-0.5 text-xs text-gray-500"
+                  >
+                    <option value="" disabled>
+                      別の日へ移動
+                    </option>
+                    {days
+                      .filter((day) => day.id !== activeDayId)
+                      .map((day) => (
+                        <option key={day.id} value={day.id}>
+                          {day.date.replaceAll("-", "/")}
+                        </option>
+                      ))}
+                  </select>
+                )}
+                {onDelete && (
+                  <button
+                    type="button"
+                    onClick={() => onDelete(band.id)}
+                    aria-label={`${band.band_name} を削除する`}
+                    title="休憩・自由枠を削除"
+                    className="rounded p-1 text-gray-400 hover:bg-red-50 hover:text-red-600"
+                  >
+                    <Trash2 size={13} />
+                  </button>
                 )}
               </span>
             )}

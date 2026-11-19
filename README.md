@@ -39,6 +39,22 @@
 | `/schedules/[id]/form`            | 出演申し込みフォーム         | 一般メンバー | 必要 |
 | `/schedules/[id]/timetable`       | タイムテーブル閲覧           | 一般メンバー | 必要 |
 
+## 開発時のコード配置
+
+`app/` に各画面の URL とルート引数の受け渡しを置き、日程に関する実装を `features/` にまとめています。
+
+| 変更したい機能 | 主な編集先 |
+| --- | --- |
+| 日程の一覧・作成・公開切り替え | `features/schedules/` |
+| 申込フォームの質問・選択肢の編集 | `features/forms/editor/` |
+| 申込時の入力・回答の保存 | `features/forms/registration/` |
+| 編集と申込で共用する固定質問 | `features/forms/fixedQuestions.ts` |
+| タイムテーブルの編集・ドラッグ・全日程の保存 | `features/timetable/editor/` |
+| 日付を指定したタイムテーブルの閲覧 | `features/timetable/public/` |
+| 編集・閲覧に共通する出演枠と転換の時刻計算 | `features/timetable/timing.ts` |
+
+タイムテーブルの編集状態は `useTimetableEditor.ts`、ドラッグ操作と取り消しは `useTimetableDrag.ts`、Supabase からの取得と保存は `timetableRepository.ts` が担当します。
+
 ## 技術スタック
 
 - [Next.js](https://nextjs.org) 16（App Router）/ React 19 / TypeScript

@@ -4,12 +4,13 @@ import clsx from "clsx";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { Coffee, CornerDownRight, GripVertical, Trash2 } from "lucide-react";
-import { Band, BandFieldValue } from "@/types";
+import { Band } from "@/types";
+import type { BandChangeHandler } from "./types";
 import { MinuteInput } from "./MinuteInput";
 
 interface UnscheduledCardProps {
   band: Band;
-  onChange: (id: string, field: keyof Band, value: BandFieldValue) => void;
+  onChange: BandChangeHandler;
   /** タイムテーブルの末尾へ追加する */
   onSchedule: (id: string) => void;
   /** 休憩枠を削除する（バンドには渡さない） */

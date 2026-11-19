@@ -4,7 +4,8 @@ import clsx from "clsx";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { Coffee, GripVertical, Trash2, Undo2 } from "lucide-react";
-import { Band, BandFieldValue, ScheduleDay } from "@/types";
+import { Band, ScheduleDay } from "@/types";
+import type { BandChangeHandler } from "./types";
 import { MinuteInput } from "./MinuteInput";
 
 interface ScheduledRowProps {
@@ -15,7 +16,7 @@ interface ScheduledRowProps {
   end: string;
   /** 転換の開始〜終了。最後の枠には転換が無いので渡さない */
   transition?: { start: string; end: string };
-  onChange: (id: string, field: keyof Band, value: BandFieldValue) => void;
+  onChange: BandChangeHandler;
   onUnschedule: (id: string) => void;
   days: ScheduleDay[];
   activeDayId: string;

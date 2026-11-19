@@ -20,10 +20,12 @@ function StatCell({
 
 export function DaySummary({
   startTime,
+  previewStartTime,
   onStartTimeChange,
   rows,
 }: {
   startTime: string;
+  previewStartTime: string;
   onStartTimeChange: (value: string) => void;
   rows: TimetableRow[];
 }) {
@@ -32,7 +34,7 @@ export function DaySummary({
     <>
       {!startTime && (
         <p className="px-4 pb-2 text-xs text-amber-700 md:px-6">
-          開始時刻は未設定です。編集中は仮に10:00から表示します。
+          開始時刻は未設定です。編集中は仮に{previewStartTime}から表示します。
         </p>
       )}
 

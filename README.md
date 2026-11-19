@@ -53,7 +53,7 @@
 | 日付を指定したタイムテーブルの閲覧 | `features/timetable/public/` |
 | 編集・閲覧に共通する出演枠と転換の時刻計算 | `features/timetable/timing.ts` |
 
-タイムテーブルの編集状態は `useTimetableEditor.ts`、ドラッグ操作と取り消しは `useTimetableDrag.ts`、Supabase からの取得と保存は `timetableRepository.ts` が担当します。
+各ファイルの役割、変更すると影響する画面、よくある変更の確認手順は [コードの読み方と変更箇所](docs/code-guide.md) にまとめています。
 
 ## 技術スタック
 

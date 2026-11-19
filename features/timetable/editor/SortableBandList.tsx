@@ -1,13 +1,19 @@
 import { useDroppable } from "@dnd-kit/core";
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
 import type { ColumnId } from "./types";
 
-/** ドロップを受け付けるエリア。中身が空でも落とせるようにするために必要 */
-export function DroppableColumn({
+/** 各リストをドロップ先にし、受け取った順序で枠を縦に並べ替える。 */
+export function SortableBandList({
   id,
+  bandIds,
   className,
   children,
 }: {
   id: ColumnId;
+  bandIds: string[];
   className?: string;
   children: React.ReactNode;
 }) {
@@ -18,7 +24,9 @@ export function DroppableColumn({
       className={className}
       data-over={isOver ? "true" : undefined}
     >
-      {children}
+      <SortableContext items={bandIds} strategy={verticalListSortingStrategy}>
+        {children}
+      </SortableContext>
     </div>
   );
 }

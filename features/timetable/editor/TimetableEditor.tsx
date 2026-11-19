@@ -16,7 +16,7 @@ import { EditorHeader } from "./EditorHeader";
 import { ScheduledList } from "./ScheduledList";
 import { UnscheduledList } from "./UnscheduledList";
 
-const DEFAULT_START_TIME = "10:00";
+const PREVIEW_START_TIME = "10:00";
 
 // 表示密度の選択はブラウザに覚えさせる（出演数が多い団体は常に詰めたいため）
 const COMPACT_STORAGE_KEY = "band-timeline:timetable-compact";
@@ -39,7 +39,7 @@ export default function TimetableEditor({
   } = editor;
   const { activeBand, dragging, contextProps } = useTimetableDrag(editor);
   const rows = useMemo(
-    () => calculateRows(columns.scheduled, startTime || DEFAULT_START_TIME),
+    () => calculateRows(columns.scheduled, startTime || PREVIEW_START_TIME),
     [columns.scheduled, startTime],
   );
   // 初回描画は読み込み表示なので、編集画面を開く前に表示密度を復元できる。
@@ -106,6 +106,7 @@ export default function TimetableEditor({
             <DaySummary
               rows={rows}
               startTime={startTime}
+              previewStartTime={PREVIEW_START_TIME}
               onStartTimeChange={editor.setStartTime}
             />
           </EditorHeader>

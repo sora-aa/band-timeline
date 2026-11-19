@@ -1,13 +1,9 @@
 import Link from "next/link";
 import { ChevronLeft, Inbox, Plus } from "lucide-react";
-import {
-  SortableContext,
-  verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
 import type { Band } from "@/types";
 import type { BandChangeHandler } from "./types";
 import { UnscheduledCard } from "./UnscheduledCard";
-import { DroppableColumn } from "./DroppableColumn";
+import { SortableBandList } from "./SortableBandList";
 
 interface UnscheduledListProps {
   bands: Band[];
@@ -55,24 +51,20 @@ export function UnscheduledList({
         </button>
       </div>
 
-      <DroppableColumn
+      <SortableBandList
         id="unscheduled"
+        bandIds={bands.map((band) => band.id)}
         className="max-h-80 flex-1 overflow-y-auto px-3 py-3 data-[over=true]:bg-blue-50/60 md:max-h-none"
       >
-        <SortableContext
-          items={bands.map((b) => b.id)}
-          strategy={verticalListSortingStrategy}
-        >
-          {bands.map((band) => (
-            <UnscheduledCard
-              key={band.id}
-              band={band}
-              onChange={onChange}
-              onSchedule={onSchedule}
-              onDelete={band.is_break ? onDeleteBreak : undefined}
-            />
-          ))}
-        </SortableContext>
+        {bands.map((band) => (
+          <UnscheduledCard
+            key={band.id}
+            band={band}
+            onChange={onChange}
+            onSchedule={onSchedule}
+            onDelete={band.is_break ? onDeleteBreak : undefined}
+          />
+        ))}
 
         {bands.length === 0 && (
           <div className="flex flex-col items-center gap-1.5 rounded-lg border-2 border-dashed border-gray-200 px-4 py-8 text-center text-gray-400">
@@ -80,7 +72,7 @@ export function UnscheduledList({
             <span className="text-xs">すべて配置済みです</span>
           </div>
         )}
-      </DroppableColumn>
+      </SortableBandList>
     </aside>
   );
 }

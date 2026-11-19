@@ -1,12 +1,8 @@
 import { Inbox } from "lucide-react";
-import {
-  SortableContext,
-  verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
 import type { ScheduleDay } from "@/types";
 import type { TimetableRow } from "../timing";
 import type { BandChangeHandler } from "./types";
-import { DroppableColumn } from "./DroppableColumn";
+import { SortableBandList } from "./SortableBandList";
 import { ScheduledRow } from "./ScheduledRow";
 
 interface ScheduledListProps {
@@ -31,8 +27,9 @@ export function ScheduledList({
   onDeleteBreak,
 }: ScheduledListProps) {
   return (
-    <DroppableColumn
+    <SortableBandList
       id="scheduled"
+      bandIds={rows.map(({ band }) => band.id)}
       className="flex-1 overflow-y-auto px-3 pb-16 data-[over=true]:bg-blue-50/40 md:px-6"
     >
       <div className="mx-auto max-w-5xl">
@@ -51,28 +48,23 @@ export function ScheduledList({
         )}
 
         <div className={rows.length > 0 ? "" : "pt-3"}>
-          <SortableContext
-            items={rows.map(({ band }) => band.id)}
-            strategy={verticalListSortingStrategy}
-          >
-            {rows.map(({ band, start, end, transition }, index) => (
-              <ScheduledRow
-                key={band.id}
-                band={band}
-                position={index + 1}
-                start={start}
-                end={end}
-                transition={transition}
-                compact={compact}
-                onChange={onChange}
-                onUnschedule={onUnschedule}
-                days={days}
-                activeDayId={activeDayId}
-                onMoveToDay={onMoveToDay}
-                onDelete={band.is_break ? onDeleteBreak : undefined}
-              />
-            ))}
-          </SortableContext>
+          {rows.map(({ band, start, end, transition }, index) => (
+            <ScheduledRow
+              key={band.id}
+              band={band}
+              position={index + 1}
+              start={start}
+              end={end}
+              transition={transition}
+              compact={compact}
+              onChange={onChange}
+              onUnschedule={onUnschedule}
+              days={days}
+              activeDayId={activeDayId}
+              onMoveToDay={onMoveToDay}
+              onDelete={band.is_break ? onDeleteBreak : undefined}
+            />
+          ))}
 
           {rows.length === 0 && (
             <div className="flex flex-col items-center gap-2 rounded-xl border-2 border-dashed border-gray-300 bg-white/50 px-6 py-20 text-center text-gray-400">
@@ -85,6 +77,6 @@ export function ScheduledList({
           )}
         </div>
       </div>
-    </DroppableColumn>
+    </SortableBandList>
   );
 }

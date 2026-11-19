@@ -8,6 +8,7 @@ import {
 } from "react";
 import type { Band, BandFieldValue, ScheduleDay } from "@/types";
 import type { ColumnId, Columns, EditorBands } from "./types";
+import { moveBetweenColumns, moveBetweenDays } from "./bandPlacement";
 import { loadTimetable, saveTimetable } from "./timetableRepository";
 
 export function useTimetableEditor(scheduleId: string) {
@@ -128,16 +129,7 @@ export function useTimetableEditor(scheduleId: string) {
 
   // ボタンからの移動（ドラッグせずに配置／未配置へ戻す）
   const moveBand = (id: string, to: ColumnId) => {
-    setColumns((prev) => {
-      const from: ColumnId = to === "scheduled" ? "unscheduled" : "scheduled";
-      const item = prev[from].find((b) => b.id === id);
-      if (!item) return prev;
-
-      const next = { ...prev };
-      next[from] = prev[from].filter((b) => b.id !== id);
-      next[to] = [...prev[to], item];
-      return next;
-    });
+    setColumns((prev) => moveBetweenColumns(prev, id, to));
     setDirty(true);
   };
 
@@ -171,19 +163,9 @@ export function useTimetableEditor(scheduleId: string) {
   };
 
   const moveToDay = (id: string, targetDayId: string) => {
-    setEditorBands((prev) => {
-      const source = prev.byDay[activeDayId] ?? [];
-      const band = source.find((item) => item.id === id);
-      if (!band || targetDayId === activeDayId) return prev;
-      return {
-        ...prev,
-        byDay: {
-          ...prev.byDay,
-          [activeDayId]: source.filter((item) => item.id !== id),
-          [targetDayId]: [...(prev.byDay[targetDayId] ?? []), band],
-        },
-      };
-    });
+    setEditorBands((prev) =>
+      moveBetweenDays(prev, id, activeDayId, targetDayId),
+    );
     setDirty(true);
   };
   const handleSave = async () => {

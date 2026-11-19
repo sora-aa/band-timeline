@@ -9,6 +9,7 @@ import {
   useSensors,
 } from "@dnd-kit/core";
 import { arrayMove, sortableKeyboardCoordinates } from "@dnd-kit/sortable";
+import { moveBetweenColumns } from "./bandPlacement";
 import type { ColumnId, Columns } from "./types";
 
 export function useTimetableDrag({
@@ -70,10 +71,7 @@ export function useTimetableDrag({
     if (!from || !to || from === to) return;
 
     setColumns((prev) => {
-      const source = prev[from];
       const target = prev[to];
-      const item = source.find((b) => b.id === active.id);
-      if (!item) return prev;
 
       // エリアそのものに重なっているときは末尾、カードに重なっているときはその位置へ
       let insertAt = target.length;
@@ -85,14 +83,7 @@ export function useTimetableDrag({
         insertAt = overIndex + (isBelowOverItem ? 1 : 0);
       }
 
-      const next = { ...prev };
-      next[from] = source.filter((b) => b.id !== item.id);
-      next[to] = [
-        ...target.slice(0, insertAt),
-        item,
-        ...target.slice(insertAt),
-      ];
-      return next;
+      return moveBetweenColumns(prev, active.id as string, to, insertAt);
     });
     setDirty(true);
   };

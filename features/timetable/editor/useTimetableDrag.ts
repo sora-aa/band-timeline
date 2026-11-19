@@ -42,9 +42,7 @@ export function useTimetableDrag({
   );
   // handleDragOver はドラッグ中に実際にリストを書き換えるため、
   // Escキーなどで中止されたときに戻せるよう開始時点の状態を控えておく
-  const dragSnapshot = useRef<{ columns: Columns; dirty: boolean } | null>(
-    null,
-  );
+  const dragSnapshot = useRef<{ columns: Columns; dirty: boolean } | null>(null);
 
   const handleDragStart = (event: DragStartEvent) => {
     dragSnapshot.current = { columns, dirty };
@@ -78,8 +76,7 @@ export function useTimetableDrag({
       const overIndex = target.findIndex((b) => b.id === over.id);
       if (overIndex !== -1) {
         const activeRect = active.rect.current.translated;
-        const isBelowOverItem =
-          !!activeRect && activeRect.top > over.rect.top + over.rect.height / 2;
+        const isBelowOverItem = !!activeRect && activeRect.top > over.rect.top + over.rect.height / 2;
         insertAt = overIndex + (isBelowOverItem ? 1 : 0);
       }
 
@@ -101,10 +98,7 @@ export function useTimetableDrag({
 
     const list = columns[from];
     const oldIndex = list.findIndex((b) => b.id === active.id);
-    const newIndex =
-      over.id === to
-        ? list.length - 1
-        : list.findIndex((b) => b.id === over.id);
+    const newIndex = over.id === to ? list.length - 1 : list.findIndex((b) => b.id === over.id);
     if (oldIndex === -1 || newIndex === -1 || oldIndex === newIndex) return;
 
     setColumns((prev) => {
@@ -115,8 +109,7 @@ export function useTimetableDrag({
     setDirty(true);
   };
   const activeBand =
-    columns.unscheduled.find((b) => b.id === activeId) ||
-    columns.scheduled.find((b) => b.id === activeId);
+    columns.unscheduled.find((b) => b.id === activeId) || columns.scheduled.find((b) => b.id === activeId);
 
   return {
     activeBand,

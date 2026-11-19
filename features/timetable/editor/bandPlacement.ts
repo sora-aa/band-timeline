@@ -15,11 +15,7 @@ export function moveBetweenColumns(
   return {
     ...columns,
     [source]: columns[source].filter((item) => item.id !== bandId),
-    [destination]: [
-      ...target.slice(0, insertAt),
-      band,
-      ...target.slice(insertAt),
-    ],
+    [destination]: [...target.slice(0, insertAt), band, ...target.slice(insertAt)],
   };
 }
 

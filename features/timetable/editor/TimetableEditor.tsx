@@ -1,12 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import {
-  DndContext,
-  DragOverlay,
-  MeasuringStrategy,
-  closestCorners,
-} from "@dnd-kit/core";
+import { DndContext, DragOverlay, MeasuringStrategy, closestCorners } from "@dnd-kit/core";
 import { calculateRows } from "../timing";
 import { useTimetableEditor } from "./useTimetableEditor";
 import { useTimetableDrag } from "./useTimetableDrag";
@@ -21,22 +16,9 @@ const PREVIEW_START_TIME = "10:00";
 // 表示密度の選択はブラウザに覚えさせる（出演数が多い団体は常に詰めたいため）
 const COMPACT_STORAGE_KEY = "band-timeline:timetable-compact";
 
-export default function TimetableEditor({
-  scheduleId,
-}: {
-  scheduleId: string;
-}) {
+export default function TimetableEditor({ scheduleId }: { scheduleId: string }) {
   const editor = useTimetableEditor(scheduleId);
-  const {
-    columns,
-    days,
-    activeDayId,
-    startTime,
-    saving,
-    loading,
-    loadError,
-    toast,
-  } = editor;
+  const { columns, days, activeDayId, startTime, saving, loading, loadError, toast } = editor;
   const { activeBand, dragging, contextProps } = useTimetableDrag(editor);
   const rows = useMemo(
     () => calculateRows(columns.scheduled, startTime || PREVIEW_START_TIME),
@@ -44,9 +26,7 @@ export default function TimetableEditor({
   );
   // 初回描画は読み込み表示なので、編集画面を開く前に表示密度を復元できる。
   const [compact, setCompact] = useState(
-    () =>
-      typeof window !== "undefined" &&
-      localStorage.getItem(COMPACT_STORAGE_KEY) === "1",
+    () => typeof window !== "undefined" && localStorage.getItem(COMPACT_STORAGE_KEY) === "1",
   );
   const toggleCompact = () => {
     localStorage.setItem(COMPACT_STORAGE_KEY, compact ? "0" : "1");
@@ -60,11 +40,7 @@ export default function TimetableEditor({
         <p role="alert" className="text-red-600">
           {loadError}
         </p>
-        <button
-          type="button"
-          onClick={() => window.location.reload()}
-          className="mt-4 rounded border px-4 py-2"
-        >
+        <button type="button" onClick={() => window.location.reload()} className="mt-4 rounded border px-4 py-2">
           再読み込み
         </button>
       </div>
@@ -122,9 +98,7 @@ export default function TimetableEditor({
           />
         </main>
 
-        <DragOverlay>
-          {activeBand ? <DragPreview band={activeBand} /> : null}
-        </DragOverlay>
+        <DragOverlay>{activeBand ? <DragPreview band={activeBand} /> : null}</DragOverlay>
       </DndContext>
 
       {toast && (

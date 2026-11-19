@@ -50,18 +50,11 @@ export function useSchedules() {
     }
   };
   // フォームまたはタイムテーブルの公開・非公開を切り替える関数
-  const toggleStatus = async (
-    schedule: Schedule,
-    column: PublicationColumn,
-  ) => {
+  const toggleStatus = async (schedule: Schedule, column: PublicationColumn) => {
     const newValue = !schedule[column]; // 現在の値の反対をセット true→false、false→true
 
     // 画面上の表示はすぐに更新
-    setSchedules((prev) =>
-      prev.map((s) =>
-        s.id === schedule.id ? { ...s, [column]: newValue } : s,
-      ),
-    );
+    setSchedules((prev) => prev.map((s) => (s.id === schedule.id ? { ...s, [column]: newValue } : s)));
 
     // supabaseのデータは後から更新
     try {

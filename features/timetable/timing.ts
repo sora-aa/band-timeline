@@ -53,12 +53,8 @@ export type TimetableRow = ReturnType<typeof calculateRows>[number];
 export function summarizeRows(rows: TimetableRow[]) {
   const first = rows[0];
   const last = rows.at(-1);
-  const totalMinutes =
-    first && last ? timeToMinutes(last.end) - timeToMinutes(first.start) : 0;
-  const playMinutes = rows.reduce(
-    (sum, { band }) => sum + (band.duration_minutes ?? 0),
-    0,
-  );
+  const totalMinutes = first && last ? timeToMinutes(last.end) - timeToMinutes(first.start) : 0;
+  const playMinutes = rows.reduce((sum, { band }) => sum + (band.duration_minutes ?? 0), 0);
   const breakCount = rows.filter(({ band }) => band.is_break).length;
   return {
     endTime: last?.end,

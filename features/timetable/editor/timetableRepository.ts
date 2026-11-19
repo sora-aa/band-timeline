@@ -12,13 +12,8 @@ export async function loadTimetable(scheduleId: string) {
     .eq("id", scheduleId)
     .single();
   if (error) throw error;
-  const loadedDays = (data.schedule_days as ScheduleDay[]).sort((a, b) =>
-    a.date.localeCompare(b.date),
-  );
-  if (!loadedDays.length)
-    throw new Error(
-      "開催日がありません。DBのマイグレーションを確認してください",
-    );
+  const loadedDays = (data.schedule_days as ScheduleDay[]).sort((a, b) => a.date.localeCompare(b.date));
+  if (!loadedDays.length) throw new Error("開催日がありません。DBのマイグレーションを確認してください");
   const bands = data.bands as Band[];
 
   return {
@@ -57,11 +52,7 @@ export async function saveTimetable({
   persistedBandIds,
   deletedBreakIds,
 }: TimetableSave) {
-  const serializeBand = (
-    band: Band,
-    dayId: string | null,
-    index: number | null,
-  ) => ({
+  const serializeBand = (band: Band, dayId: string | null, index: number | null) => ({
     id: band.id,
     schedule_day_id: dayId,
     sort_order: index,
@@ -72,9 +63,7 @@ export async function saveTimetable({
   });
   const updates = [
     ...days.flatMap((day) =>
-      (editorBands.byDay[day.id] ?? []).map((band, index) =>
-        serializeBand(band, day.id, index),
-      ),
+      (editorBands.byDay[day.id] ?? []).map((band, index) => serializeBand(band, day.id, index)),
     ),
     ...editorBands.unscheduled.map((band) => serializeBand(band, null, null)),
   ];

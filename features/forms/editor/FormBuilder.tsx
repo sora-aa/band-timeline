@@ -8,13 +8,8 @@ interface FormBuilderProps {
   onSave: (fields: QuestionField[]) => void;
   initialFields?: QuestionField[]; // すでに質問データがあった場合に渡す
 }
-export default function FormBuilder({
-  onSave,
-  initialFields = [],
-}: FormBuilderProps) {
-  const [fields, setFields] = useState(
-    initialFields.length ? initialFields : DEFAULT_QUESTIONS,
-  );
+export default function FormBuilder({ onSave, initialFields = [] }: FormBuilderProps) {
+  const [fields, setFields] = useState(initialFields.length ? initialFields : DEFAULT_QUESTIONS);
 
   function addField() {
     const field: QuestionField = {
@@ -38,17 +33,9 @@ export default function FormBuilder({
             index={index}
             isFixed={index < DEFAULT_QUESTIONS.length}
             onChange={(updates) =>
-              setFields((current) =>
-                current.map((item) =>
-                  item.id === field.id ? { ...item, ...updates } : item,
-                ),
-              )
+              setFields((current) => current.map((item) => (item.id === field.id ? { ...item, ...updates } : item)))
             }
-            onRemove={() =>
-              setFields((current) =>
-                current.filter((item) => item.id !== field.id),
-              )
-            }
+            onRemove={() => setFields((current) => current.filter((item) => item.id !== field.id))}
           />
         ))}
       </div>

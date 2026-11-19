@@ -46,12 +46,8 @@ export function ScheduleCard({
         </Link>
       </div>
       <div className="flex-1">
-        <h3 className="mb-1 text-lg font-semibold text-gray-800">
-          {schedule.title}
-        </h3>
-        <p className="m-0 text-sm text-gray-500">
-          📅 {formatDate(schedule.start_date, schedule.end_date)}
-        </p>
+        <h3 className="mb-1 text-lg font-semibold text-gray-800">{schedule.title}</h3>
+        <p className="m-0 text-sm text-gray-500">📅 {formatDate(schedule.start_date, schedule.end_date)}</p>
       </div>
 
       <div className="flex flex-col gap-1 md:mr-5 md:items-end">
@@ -60,9 +56,7 @@ export function ScheduleCard({
           <button
             onClick={() => onToggle("is_form_open")}
             className={`w-20 rounded px-2.5 py-1.5 text-xs font-bold ${
-              schedule.is_form_open
-                ? "bg-blue-600 text-white"
-                : "bg-gray-200 text-gray-700"
+              schedule.is_form_open ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-700"
             }`}
           >
             {schedule.is_form_open ? "公開" : "非公開"}
@@ -74,9 +68,7 @@ export function ScheduleCard({
           <button
             onClick={() => onToggle("is_timetable_open")}
             className={`w-20 rounded px-2.5 py-1.5 text-xs font-bold ${
-              schedule.is_timetable_open
-                ? "bg-green-600 text-white"
-                : "bg-gray-200 text-gray-700"
+              schedule.is_timetable_open ? "bg-green-600 text-white" : "bg-gray-200 text-gray-700"
             }`}
           >
             {schedule.is_timetable_open ? "公開" : "非公開"}

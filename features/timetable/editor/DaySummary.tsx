@@ -1,18 +1,10 @@
 import { formatDuration, summarizeRows, type TimetableRow } from "../timing";
 
 /** 見出し付きの数値パネル。ヘッダーの統計表示に使う */
-function StatCell({
-  label,
-  children,
-}: {
-  label: string;
-  children: React.ReactNode;
-}) {
+function StatCell({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="flex flex-col justify-center gap-0.5 bg-white px-3 py-2 md:px-4">
-      <span className="text-[11px] font-bold tracking-wide text-gray-400">
-        {label}
-      </span>
+      <span className="text-[11px] font-bold tracking-wide text-gray-400">{label}</span>
       {children}
     </div>
   );
@@ -51,30 +43,20 @@ export function DaySummary({
         </StatCell>
 
         <StatCell label="終了予定">
-          <span className="text-xl font-bold tabular-nums text-gray-900">
-            {stats.endTime ?? "--:--"}
-          </span>
+          <span className="text-xl font-bold tabular-nums text-gray-900">{stats.endTime ?? "--:--"}</span>
         </StatCell>
 
         <StatCell label="出演組数">
           <span className="text-sm tabular-nums text-gray-900">
             <strong className="text-xl font-bold">{stats.bandCount}</strong>組
-            {stats.breakCount > 0 && (
-              <span className="ml-1.5 text-xs text-gray-400">
-                + 休憩{stats.breakCount}
-              </span>
-            )}
+            {stats.breakCount > 0 && <span className="ml-1.5 text-xs text-gray-400">+ 休憩{stats.breakCount}</span>}
           </span>
         </StatCell>
 
         <StatCell label="所要時間">
           <span className="text-sm text-gray-900">
-            <strong className="text-xl font-bold tabular-nums">
-              {formatDuration(stats.totalMinutes)}
-            </strong>
-            <span className="ml-1.5 text-xs text-gray-400">
-              転換 {formatDuration(stats.transitionMinutes)}
-            </span>
+            <strong className="text-xl font-bold tabular-nums">{formatDuration(stats.totalMinutes)}</strong>
+            <span className="ml-1.5 text-xs text-gray-400">転換 {formatDuration(stats.transitionMinutes)}</span>
           </span>
         </StatCell>
       </div>

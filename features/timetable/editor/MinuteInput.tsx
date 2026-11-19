@@ -31,19 +31,10 @@ export function MinuteInput({
         className={clsx(
           "rounded border border-gray-300 bg-white text-right tabular-nums",
           "focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500",
-          size === "sm"
-            ? "w-12 px-1 py-0.5 text-xs"
-            : "w-14 px-1.5 py-1 text-sm",
+          size === "sm" ? "w-12 px-1 py-0.5 text-xs" : "w-14 px-1.5 py-1 text-sm",
         )}
       />
-      <span
-        className={clsx(
-          "text-gray-500",
-          size === "sm" ? "text-[11px]" : "text-xs",
-        )}
-      >
-        分
-      </span>
+      <span className={clsx("text-gray-500", size === "sm" ? "text-[11px]" : "text-xs")}>分</span>
     </span>
   );
 }

@@ -56,8 +56,7 @@ export default function CreateScheduleForm() {
       router.refresh(); // ページのデータを再取得して最新の状態に更新
     } catch (err: unknown) {
       // エラーの内容がちゃんとしてたら表示、そうでなければ不明なエラーと表示
-      const errorMessage =
-        err instanceof Error ? err.message : "不明なエラーが発生しました";
+      const errorMessage = err instanceof Error ? err.message : "不明なエラーが発生しました";
       console.error(err);
       setErrorMsg("保存に失敗しました： " + errorMessage);
       setLoading(false);
@@ -67,20 +66,13 @@ export default function CreateScheduleForm() {
   return (
     <div className="mx-auto max-w-[600px] p-4 md:p-10">
       <div className="mb-5">
-        <Link
-          href="/admin/schedules"
-          className="text-sm text-gray-600 hover:underline"
-        >
+        <Link href="/admin/schedules" className="text-sm text-gray-600 hover:underline">
           &lt; 一覧に戻る
         </Link>
         <h1 className="mt-2.5 text-xl md:text-2xl">新規スケジュールの作成</h1>
       </div>
 
-      {errorMsg && (
-        <div className="mb-5 rounded-md bg-red-100 p-2.5 text-red-800">
-          {errorMsg}
-        </div>
-      )}
+      {errorMsg && <div className="mb-5 rounded-md bg-red-100 p-2.5 text-red-800">{errorMsg}</div>}
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-5">
         <div className="flex flex-col">
@@ -124,9 +116,7 @@ export default function CreateScheduleForm() {
               required
               className="w-full rounded-md border border-gray-300 p-2.5 text-base outline-none focus:border-blue-600 focus:ring-4 focus:ring-blue-100"
             />
-            <p className="mb-0 mt-1 text-xs text-gray-600">
-              ※1日だけのイベントの際は開始日と同じ日付にしてください
-            </p>
+            <p className="mb-0 mt-1 text-xs text-gray-600">※1日だけのイベントの際は開始日と同じ日付にしてください</p>
           </div>
         </div>
 

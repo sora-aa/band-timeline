@@ -13,15 +13,10 @@ export function AnswerField({
   return (
     <div className="flex flex-col gap-2">
       <label className="font-bold">
-        {question.label}{" "}
-        {question.required && <span className="text-red-500">*</span>}
+        {question.label} {question.required && <span className="text-red-500">*</span>}
       </label>
 
-      {question.description && (
-        <p className="-mt-1 mb-0 text-xs text-gray-600">
-          {question.description}
-        </p>
-      )}
+      {question.description && <p className="-mt-1 mb-0 text-xs text-gray-600">{question.description}</p>}
 
       {question.type === "text" && (
         <input
@@ -44,12 +39,8 @@ export function AnswerField({
       {question.type === "number" && (
         <input
           type="number"
-          min={
-            question.id === FIXED_QUESTION_IDS.durationMinutes ? 0 : undefined
-          }
-          step={
-            question.id === FIXED_QUESTION_IDS.durationMinutes ? 1 : undefined
-          }
+          min={question.id === FIXED_QUESTION_IDS.durationMinutes ? 0 : undefined}
+          step={question.id === FIXED_QUESTION_IDS.durationMinutes ? 1 : undefined}
           required={question.required}
           onChange={(e) => onChange(e.target.value)}
           className="rounded-md border border-gray-300 p-3 text-base"

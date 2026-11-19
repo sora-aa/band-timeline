@@ -1,9 +1,4 @@
-export type QuestionType =
-  | "text"
-  | "textarea"
-  | "number"
-  | "checkbox"
-  | "select";
+export type QuestionType = "text" | "textarea" | "number" | "checkbox" | "select";
 
 export type QuestionAnswer = string | number | boolean | string[];
 

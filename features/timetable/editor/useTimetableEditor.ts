@@ -1,11 +1,4 @@
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type SetStateAction,
-} from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type SetStateAction } from "react";
 import type { Band, BandFieldValue, ScheduleDay } from "@/types";
 import type { ColumnId, Columns, EditorBands } from "./types";
 import { moveBetweenColumns, moveBetweenDays } from "./bandPlacement";
@@ -27,11 +20,7 @@ export function useTimetableEditor(scheduleId: string) {
   const activeDay = days.find((day) => day.id === activeDayId);
   const startTime = activeDay?.start_time?.slice(0, 5) ?? "";
   const setStartTime = (value: string) => {
-    setDays((prev) =>
-      prev.map((day) =>
-        day.id === activeDayId ? { ...day, start_time: value || null } : day,
-      ),
-    );
+    setDays((prev) => prev.map((day) => (day.id === activeDayId ? { ...day, start_time: value || null } : day)));
     setDirty(true);
   };
   const columns = useMemo<Columns>(
@@ -66,13 +55,10 @@ export function useTimetableEditor(scheduleId: string) {
     type: "success" | "error";
     message: string;
   } | null>(null);
-  const showToast = useCallback(
-    (type: "success" | "error", message: string) => {
-      setToast({ type, message });
-      window.setTimeout(() => setToast(null), 3000);
-    },
-    [],
-  );
+  const showToast = useCallback((type: "success" | "error", message: string) => {
+    setToast({ type, message });
+    window.setTimeout(() => setToast(null), 3000);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -111,18 +97,10 @@ export function useTimetableEditor(scheduleId: string) {
     window.addEventListener("beforeunload", handler);
     return () => window.removeEventListener("beforeunload", handler);
   }, [dirty]);
-  const handleBandChange = (
-    id: string,
-    field: keyof Band,
-    value: BandFieldValue,
-  ) => {
+  const handleBandChange = (id: string, field: keyof Band, value: BandFieldValue) => {
     setColumns((prev) => ({
-      unscheduled: prev.unscheduled.map((b) =>
-        b.id === id ? { ...b, [field]: value } : b,
-      ),
-      scheduled: prev.scheduled.map((b) =>
-        b.id === id ? { ...b, [field]: value } : b,
-      ),
+      unscheduled: prev.unscheduled.map((b) => (b.id === id ? { ...b, [field]: value } : b)),
+      scheduled: prev.scheduled.map((b) => (b.id === id ? { ...b, [field]: value } : b)),
     }));
     setDirty(true);
   };
@@ -153,8 +131,7 @@ export function useTimetableEditor(scheduleId: string) {
 
   const deleteBreak = (id: string) => {
     if (!window.confirm("この枠を削除しますか？")) return;
-    if (persistedBandIds.current.has(id))
-      setDeletedBreakIds((prev) => [...prev, id]);
+    if (persistedBandIds.current.has(id)) setDeletedBreakIds((prev) => [...prev, id]);
     setColumns((prev) => ({
       unscheduled: prev.unscheduled.filter((b) => b.id !== id),
       scheduled: prev.scheduled.filter((b) => b.id !== id),
@@ -163,9 +140,7 @@ export function useTimetableEditor(scheduleId: string) {
   };
 
   const moveToDay = (id: string, targetDayId: string) => {
-    setEditorBands((prev) =>
-      moveBetweenDays(prev, id, activeDayId, targetDayId),
-    );
+    setEditorBands((prev) => moveBetweenDays(prev, id, activeDayId, targetDayId));
     setDirty(true);
   };
   const handleSave = async () => {
@@ -189,9 +164,7 @@ export function useTimetableEditor(scheduleId: string) {
       showToast("success", "すべての日程を保存しました");
     } catch (err: unknown) {
       const message =
-        err && typeof err === "object" && "message" in err
-          ? String(err.message)
-          : "不明なエラーが発生しました";
+        err && typeof err === "object" && "message" in err ? String(err.message) : "不明なエラーが発生しました";
       console.error(err);
       setSaveError(`保存に失敗しました: ${message}`);
       showToast("error", `保存に失敗しました: ${message}`);

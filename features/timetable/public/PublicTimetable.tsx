@@ -12,11 +12,7 @@ export default async function PublicTimetable({
 }) {
   const supabase = await createClient();
 
-  const { data: schedule } = await supabase
-    .from("schedules")
-    .select("*")
-    .eq("id", scheduleId)
-    .single();
+  const { data: schedule } = await supabase.from("schedules").select("*").eq("id", scheduleId).single();
 
   if (!schedule) {
     return <div>データが見つかりません</div>;
@@ -38,22 +34,14 @@ export default async function PublicTimetable({
     .eq("schedule_id", scheduleId)
     .order("date");
   if (daysError || !days?.length) {
-    return (
-      <div className="p-10 text-center">開催日の情報を取得できませんでした</div>
-    );
+    return <div className="p-10 text-center">開催日の情報を取得できませんでした</div>;
   }
-  const selectedDay =
-    requestedDate === undefined
-      ? days[0]
-      : days.find((day) => day.date === requestedDate);
+  const selectedDay = requestedDate === undefined ? days[0] : days.find((day) => day.date === requestedDate);
   if (!selectedDay)
     return (
       <div className="p-10 text-center">
         <p>指定された開催日はありません</p>
-        <Link
-          className="text-blue-600 underline"
-          href={`/schedules/${scheduleId}/timetable`}
-        >
+        <Link className="text-blue-600 underline" href={`/schedules/${scheduleId}/timetable`}>
           最初の開催日を表示
         </Link>
       </div>
@@ -66,19 +54,14 @@ export default async function PublicTimetable({
     .eq("schedule_id", scheduleId)
     .eq("schedule_day_id", selectedDay.id)
     .order("sort_order", { ascending: true });
-  if (bandsError || !bands)
-    return (
-      <div className="p-10 text-center">タイムテーブルの取得に失敗しました</div>
-    );
+  if (bandsError || !bands) return <div className="p-10 text-center">タイムテーブルの取得に失敗しました</div>;
 
   // 日付表示を「YY/MM/DD」形式にフォーマット
   const displayDate = selectedDay.date.slice(2).replaceAll("-", "/");
   return (
     <div className="min-h-screen bg-gray-50 px-11 py-6 max-[900px]:p-4">
       <div className="mx-auto mb-4 max-w-[1120px]">
-        <h1 className="mb-3 text-lg font-bold text-gray-900">
-          {schedule.title}
-        </h1>
+        <h1 className="mb-3 text-lg font-bold text-gray-900">{schedule.title}</h1>
         <nav aria-label="表示する開催日" className="flex gap-2 overflow-x-auto">
           {days.map((day) => (
             <Link
@@ -97,13 +80,9 @@ export default async function PublicTimetable({
           {displayDate}
         </header>
         {!selectedDay.start_time ? (
-          <p className="p-10 text-center text-gray-500">
-            この日の開始時刻は未設定です
-          </p>
+          <p className="p-10 text-center text-gray-500">この日の開始時刻は未設定です</p>
         ) : bands.length === 0 ? (
-          <p className="p-10 text-center text-gray-500">
-            この日のタイムテーブルはまだ作成されていません
-          </p>
+          <p className="p-10 text-center text-gray-500">この日のタイムテーブルはまだ作成されていません</p>
         ) : (
           <TimetableGrid rows={calculateRows(bands, selectedDay.start_time)} />
         )}

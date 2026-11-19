@@ -2,10 +2,7 @@ import type { QuestionAnswer } from "@/types";
 import { createClient } from "@/utils/supabase/client";
 import { FIXED_QUESTION_IDS } from "../fixedQuestions";
 
-export async function submitRegistration(
-  scheduleId: string,
-  answers: Record<string, QuestionAnswer>,
-) {
+export async function submitRegistration(scheduleId: string, answers: Record<string, QuestionAnswer>) {
   const {
     [FIXED_QUESTION_IDS.representativeName]: representativeName,
     [FIXED_QUESTION_IDS.bandName]: bandName,

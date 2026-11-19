@@ -20,15 +20,9 @@ export function QuestionEditor({
       <div className="mb-4 flex items-start justify-between">
         <div className="mb-4 flex-1">
           <label className="mb-2 block font-bold">
-            {isFixed && (
-              <Lock size={14} className="mr-1 inline-block align-middle" />
-            )}
+            {isFixed && <Lock size={14} className="mr-1 inline-block align-middle" />}
             質問 {index + 1}
-            {isFixed && (
-              <span className="ml-1.5 text-[10px] font-normal text-gray-500">
-                (固定項目)
-              </span>
-            )}
+            {isFixed && <span className="ml-1.5 text-[10px] font-normal text-gray-500">(固定項目)</span>}
           </label>
           <input
             type="text"
@@ -41,10 +35,7 @@ export function QuestionEditor({
           />
         </div>
         {!isFixed && (
-          <button
-            onClick={onRemove}
-            className="cursor-pointer rounded bg-red-100 px-3 py-1 text-sm text-red-500"
-          >
+          <button onClick={onRemove} className="cursor-pointer rounded bg-red-100 px-3 py-1 text-sm text-red-500">
             <Trash2 size={16} />
             削除
           </button>
@@ -87,10 +78,7 @@ export function QuestionEditor({
       </div>
 
       {(field.type === "select" || field.type === "checkbox") && (
-        <QuestionOptions
-          options={field.options ?? []}
-          onChange={(options) => onChange({ options })}
-        />
+        <QuestionOptions options={field.options ?? []} onChange={(options) => onChange({ options })} />
       )}
 
       <div>

@@ -70,9 +70,7 @@ export function ScheduledList({
             <div className="flex flex-col items-center gap-2 rounded-xl border-2 border-dashed border-gray-300 bg-white/50 px-6 py-20 text-center text-gray-400">
               <Inbox size={28} />
               <p className="text-sm font-bold">まだ配置されていません</p>
-              <p className="text-xs">
-                左のリストからここへドラッグしてください
-              </p>
+              <p className="text-xs">左のリストからここへドラッグしてください</p>
             </div>
           )}
         </div>

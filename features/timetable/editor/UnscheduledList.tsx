@@ -13,13 +13,7 @@ interface UnscheduledListProps {
   onDeleteBreak: (id: string) => void;
 }
 
-export function UnscheduledList({
-  bands,
-  onChange,
-  onSchedule,
-  onAddBreak,
-  onDeleteBreak,
-}: UnscheduledListProps) {
+export function UnscheduledList({ bands, onChange, onSchedule, onAddBreak, onDeleteBreak }: UnscheduledListProps) {
   return (
     <aside className="flex w-full shrink-0 flex-col border-b border-gray-200 bg-white md:h-screen md:w-80 md:border-b-0 md:border-r">
       <div className="border-b border-gray-200 px-4 py-3">
@@ -37,9 +31,7 @@ export function UnscheduledList({
             {bands.length}
           </span>
         </div>
-        <p className="mt-1 text-[11px] leading-4 text-gray-400">
-          全日程共通の未配置リストです。選択中の日に配置します
-        </p>
+        <p className="mt-1 text-[11px] leading-4 text-gray-400">全日程共通の未配置リストです。選択中の日に配置します</p>
 
         <button
           type="button"

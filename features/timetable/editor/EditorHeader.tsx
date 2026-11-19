@@ -35,21 +35,14 @@ export function EditorHeader({
   return (
     <header className="z-10 shrink-0 border-b border-gray-200 bg-white">
       {saveError && (
-        <p
-          role="alert"
-          className="border-b border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
-        >
+        <p role="alert" className="border-b border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           {saveError}
         </p>
       )}
       <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 md:px-6">
         <div className="min-w-0">
-          <h1 className="truncate text-lg font-bold text-gray-900">
-            タイムテーブル作成
-          </h1>
-          {scheduleTitle && (
-            <p className="truncate text-xs text-gray-400">{scheduleTitle}</p>
-          )}
+          <h1 className="truncate text-lg font-bold text-gray-900">タイムテーブル作成</h1>
+          {scheduleTitle && <p className="truncate text-xs text-gray-400">{scheduleTitle}</p>}
         </div>
 
         <div className="flex items-center gap-3">
@@ -57,11 +50,7 @@ export function EditorHeader({
             type="button"
             onClick={toggleCompact}
             aria-pressed={compact}
-            title={
-              compact
-                ? "転換時間を展開して表示する"
-                : "行を詰めて全体を見やすくする"
-            }
+            title={compact ? "転換時間を展開して表示する" : "行を詰めて全体を見やすくする"}
             className="flex cursor-pointer items-center gap-1.5 rounded-md border border-gray-300 px-2.5 py-2 text-xs font-bold text-gray-600 hover:bg-gray-50"
           >
             {compact ? <Rows3 size={14} /> : <Rows2 size={14} />}

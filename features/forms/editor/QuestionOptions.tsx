@@ -1,20 +1,12 @@
 import { Trash2 } from "lucide-react";
 
-export function QuestionOptions({
-  options,
-  onChange,
-}: {
-  options: string[];
-  onChange: (options: string[]) => void;
-}) {
+export function QuestionOptions({ options, onChange }: { options: string[]; onChange: (options: string[]) => void }) {
   function updateOption(index: number, value: string) {
     onChange(options.map((option, i) => (i === index ? value : option)));
   }
   return (
     <div className="mb-4">
-      <label className="text-[0.9rem] text-gray-500">
-        選択肢（各入力欄に1つずつ入力）
-      </label>
+      <label className="text-[0.9rem] text-gray-500">選択肢（各入力欄に1つずつ入力）</label>
 
       <div className="mb-4 mt-3 flex flex-col gap-3">
         {options.map((option, optionIndex) => (
@@ -28,9 +20,7 @@ export function QuestionOptions({
             />
             <button
               type="button"
-              onClick={() =>
-                onChange(options.filter((_, i) => i !== optionIndex))
-              }
+              onClick={() => onChange(options.filter((_, i) => i !== optionIndex))}
               className="flex cursor-pointer items-center justify-center rounded border border-red-200 bg-red-100 p-2 text-red-600 hover:bg-red-300"
             >
               <Trash2 size={16} />

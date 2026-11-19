@@ -9,8 +9,4 @@ export type EditorBands = {
   byDay: Record<string, Band[]>;
 };
 
-export type BandChangeHandler = (
-  id: string,
-  field: keyof Band,
-  value: BandFieldValue,
-) => void;
+export type BandChangeHandler = (id: string, field: keyof Band, value: BandFieldValue) => void;

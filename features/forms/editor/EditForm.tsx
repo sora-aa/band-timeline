@@ -53,10 +53,7 @@ export default function EditForm({ scheduleId }: { scheduleId: string }) {
     setStatus("保存中...");
 
     try {
-      const { error } = await supabase
-        .from("schedules")
-        .update({ form_schema: fields })
-        .eq("id", scheduleId);
+      const { error } = await supabase.from("schedules").update({ form_schema: fields }).eq("id", scheduleId);
 
       if (error) throw error;
 
@@ -64,8 +61,7 @@ export default function EditForm({ scheduleId }: { scheduleId: string }) {
 
       setTimeout(() => router.push("/admin/schedules"), 1500); // 1.5秒後に一覧ページに移動
     } catch (err: unknown) {
-      const errorMessage =
-        err instanceof Error ? err.message : "不明なエラーが発生しました";
+      const errorMessage = err instanceof Error ? err.message : "不明なエラーが発生しました";
       console.error(err);
       setStatus("❌ 保存エラー： " + errorMessage);
     }
@@ -76,15 +72,10 @@ export default function EditForm({ scheduleId }: { scheduleId: string }) {
   return (
     <div className="mx-auto max-w-[800px] p-4 md:p-10">
       <div className="mb-5">
-        <Link
-          href="/admin/schedules"
-          className="text-sm text-gray-600 hover:underline"
-        >
+        <Link href="/admin/schedules" className="text-sm text-gray-600 hover:underline">
           &lt; スケジュール一覧に戻る
         </Link>
-        <h1 className="mb-0 mt-2.5 text-xl md:text-2xl">
-          アンケートフォーム編集
-        </h1>
+        <h1 className="mb-0 mt-2.5 text-xl md:text-2xl">アンケートフォーム編集</h1>
         <p className="mb-0 text-gray-600">
           対象イベント： <strong>{scheduleTitle}</strong>
         </p>
@@ -92,9 +83,7 @@ export default function EditForm({ scheduleId }: { scheduleId: string }) {
       {status && (
         <div
           className={`fixed bottom-5 right-5 z-[1000] max-w-[400px] rounded-md px-5 py-4 shadow ${
-            status.includes("❌")
-              ? "bg-red-100 text-red-800"
-              : "bg-green-100 text-green-800"
+            status.includes("❌") ? "bg-red-100 text-red-800" : "bg-green-100 text-green-800"
           }`}
         >
           {status}

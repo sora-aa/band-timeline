@@ -9,11 +9,7 @@ import { submitRegistration } from "./submitRegistration";
 
 const supabase = createClient();
 
-export default function RegistrationForm({
-  scheduleId,
-}: {
-  scheduleId: string;
-}) {
+export default function RegistrationForm({ scheduleId }: { scheduleId: string }) {
   const [loading, setLoading] = useState(true);
   const [schedule, setSchedule] = useState<Schedule | null>(null);
   const [answers, setAnswers] = useState<Record<string, QuestionAnswer>>({});
@@ -23,11 +19,7 @@ export default function RegistrationForm({
   useEffect(() => {
     const fetchSchedule = async () => {
       try {
-        const { data, error } = await supabase
-          .from("schedules")
-          .select("*")
-          .eq("id", scheduleId)
-          .single();
+        const { data, error } = await supabase.from("schedules").select("*").eq("id", scheduleId).single();
 
         if (error) throw error;
         setSchedule(data);
@@ -61,8 +53,7 @@ export default function RegistrationForm({
       await submitRegistration(scheduleId, answers);
       setSubmitted(true);
     } catch (err: unknown) {
-      const errorMessage =
-        err instanceof Error ? err.message : "不明なエラーが発生しました";
+      const errorMessage = err instanceof Error ? err.message : "不明なエラーが発生しました";
       console.error(err);
       setErrorMsg("送信エラー： " + errorMessage);
     }
@@ -71,8 +62,7 @@ export default function RegistrationForm({
   // 初期読み込み中の状態を表示
   if (loading) return <div className="p-10 text-center">読み込み中...</div>;
 
-  if (errorMsg)
-    return <div className="p-10 text-center text-red-500">{errorMsg}</div>;
+  if (errorMsg) return <div className="p-10 text-center text-red-500">{errorMsg}</div>;
 
   // フォームが開いていない場合は受付終了のメッセージを表示
   if (!schedule || !schedule.is_form_open) {
@@ -90,10 +80,7 @@ export default function RegistrationForm({
       <div className="mx-auto my-10 max-w-[600px] rounded-lg border border-emerald-500 bg-emerald-50 p-10 text-center">
         <h2 className="text-emerald-700">送信完了</h2>
         <p>フォームの送信を受け付けました</p>
-        <button
-          onClick={() => window.location.reload()}
-          className="mt-5 cursor-pointer p-2.5"
-        >
+        <button onClick={() => window.location.reload()} className="mt-5 cursor-pointer p-2.5">
           画面に戻る
         </button>
       </div>
@@ -116,10 +103,7 @@ export default function RegistrationForm({
           />
         ))}
 
-        <button
-          type="submit"
-          className="mt-5 cursor-pointer rounded-md bg-blue-600 p-4 text-lg font-bold text-white"
-        >
+        <button type="submit" className="mt-5 cursor-pointer rounded-md bg-blue-600 p-4 text-lg font-bold text-white">
           送信
         </button>
       </form>

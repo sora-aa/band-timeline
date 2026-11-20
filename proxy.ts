@@ -5,9 +5,7 @@ import { updateSession } from "@/utils/supabase/proxy";
 // NEXT_PUBLIC_DISABLE_AUTH=true は .env.development にのみ定義しており、
 // 本番ビルド(next build)ではそのファイルが読み込まれないため常にfalseになる。
 // 念のため NODE_ENV でも二重にガードし、本番では絶対にスキップしないようにする。
-const isAuthDisabled =
-  process.env.NODE_ENV !== "production" &&
-  process.env.NEXT_PUBLIC_DISABLE_AUTH === "true";
+const isAuthDisabled = process.env.NODE_ENV !== "production" && process.env.NEXT_PUBLIC_DISABLE_AUTH === "true";
 
 // Next.jsのproxyエントリ。
 // ここでは詳細実装を持たず、セッション更新とアクセス制御だけを行う。
@@ -23,8 +21,7 @@ export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const requestedPathWithSearch = `${pathname}${request.nextUrl.search}`;
 
-  const isPublicRoute =
-    pathname.startsWith("/login") || pathname.startsWith("/auth");
+  const isPublicRoute = pathname.startsWith("/login") || pathname.startsWith("/auth");
 
   // 未ログインで保護ページに来た場合はログイン画面へ
   if (!claims && !isPublicRoute) {
@@ -46,7 +43,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
-  ],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)"],
 };

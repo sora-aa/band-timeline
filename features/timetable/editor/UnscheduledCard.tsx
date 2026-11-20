@@ -4,12 +4,13 @@ import clsx from "clsx";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { Coffee, CornerDownRight, GripVertical, Trash2 } from "lucide-react";
-import { Band, BandFieldValue } from "@/types";
+import { Band } from "@/types";
+import type { BandChangeHandler } from "./types";
 import { MinuteInput } from "./MinuteInput";
 
 interface UnscheduledCardProps {
   band: Band;
-  onChange: (id: string, field: keyof Band, value: BandFieldValue) => void;
+  onChange: BandChangeHandler;
   /** タイムテーブルの末尾へ追加する */
   onSchedule: (id: string) => void;
   /** 休憩枠を削除する（バンドには渡さない） */
@@ -21,22 +22,10 @@ interface UnscheduledCardProps {
  * 未配置リストの1件。20組を超えても一覧できるよう、1バンド＝1行に収めている。
  * 代表者名は行に出す余裕が無いのでツールチップに逃がしている。
  */
-export function UnscheduledCard({
-  band,
-  onChange,
-  onSchedule,
-  onDelete,
-  isOverlay = false,
-}: UnscheduledCardProps) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    setActivatorNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: band.id });
+export function UnscheduledCard({ band, onChange, onSchedule, onDelete, isOverlay = false }: UnscheduledCardProps) {
+  const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, isDragging } = useSortable({
+    id: band.id,
+  });
 
   return (
     <div
@@ -44,9 +33,7 @@ export function UnscheduledCard({
       style={{ transform: CSS.Transform.toString(transform), transition }}
       className={clsx(
         "mb-0.5 flex items-stretch overflow-hidden rounded border",
-        band.is_break
-          ? "border-amber-200 bg-amber-50"
-          : "border-gray-200 bg-white",
+        band.is_break ? "border-amber-200 bg-amber-50" : "border-gray-200 bg-white",
         isDragging && "opacity-40",
         isOverlay ? "shadow-lg ring-2 ring-blue-500" : "hover:border-gray-300",
       )}
@@ -58,9 +45,7 @@ export function UnscheduledCard({
         aria-label={`${band.band_name} をドラッグして配置する`}
         className={clsx(
           "flex w-6 shrink-0 touch-none items-center justify-center border-r text-gray-400",
-          band.is_break
-            ? "border-amber-200 bg-amber-100/70"
-            : "border-gray-200 bg-gray-50",
+          band.is_break ? "border-amber-200 bg-amber-100/70" : "border-gray-200 bg-gray-50",
           isOverlay ? "cursor-grabbing" : "cursor-grab",
         )}
       >
@@ -83,11 +68,7 @@ export function UnscheduledCard({
           </>
         ) : (
           <span
-            title={
-              band.representative_name
-                ? `${band.band_name}（${band.representative_name}）`
-                : band.band_name
-            }
+            title={band.representative_name ? `${band.band_name}（${band.representative_name}）` : band.band_name}
             className="min-w-0 flex-1 truncate text-xs font-bold text-gray-900"
           >
             {band.band_name || "（名称未設定）"}

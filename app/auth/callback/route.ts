@@ -46,15 +46,12 @@ export async function GET(request: Request) {
     // サーバー側クライアントで認可コードをセッションへ交換し、Cookieに保存する
     const supabase = await createClient();
 
-    const { error: sessionError } =
-      await supabase.auth.exchangeCodeForSession(code);
+    const { error: sessionError } = await supabase.auth.exchangeCodeForSession(code);
 
     if (!sessionError) {
       // x-forwarded-host は詐称可能なため、許可リストに一致する場合のみ信用する
       const allowedRedirectHosts = getAllowedRedirectHosts();
-      const forwardedHost = normalizeForwardedHost(
-        request.headers.get("x-forwarded-host"),
-      );
+      const forwardedHost = normalizeForwardedHost(request.headers.get("x-forwarded-host"));
 
       if (forwardedHost && allowedRedirectHosts.has(forwardedHost)) {
         return NextResponse.redirect(`https://${forwardedHost}${next}`);

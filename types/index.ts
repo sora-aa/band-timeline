@@ -1,9 +1,4 @@
-export type QuestionType =
-  | "text"
-  | "textarea"
-  | "number"
-  | "checkbox"
-  | "select";
+export type QuestionType = "text" | "textarea" | "number" | "checkbox" | "select";
 
 export type QuestionAnswer = string | number | boolean | string[];
 
@@ -50,9 +45,3 @@ export type ScheduleDay = {
 
 // Band型のフィールド値のユニオン型
 export type BandFieldValue = Band[keyof Band];
-
-export interface TimetableRow {
-  band: Band;
-  start_time: string;
-  end_time: string;
-}

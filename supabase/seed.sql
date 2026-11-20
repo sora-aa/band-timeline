@@ -2,7 +2,7 @@
 -- `supabase start` / `supabase db reset` 実行時に自動で投入される。
 -- フォーム・タイムテーブルを公開済みの単日・3日間開催のイベントを用意する。
 --
--- form_schema は本番アプリ（components/admin/FormBuilder）が出力する構造に合わせている:
+-- form_schema は本番アプリ（features/forms/editor/FormBuilder）が出力する構造に合わせている:
 --   先頭3つは固定質問 fixed-1(代表者名) / fixed-2(バンド名) / fixed-3(演奏時間) で必ず含まれ、
 --   4つ目以降が幹部の追加したカスタム質問（id は UUID）。
 -- bands.custom_answers はカスタム質問の id をキーに持つ（固定質問は

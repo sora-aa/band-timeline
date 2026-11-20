@@ -11,9 +11,7 @@ type SessionUpdateResult = {
 
 const AUTH_COOKIE_NAME_PATTERN = /-auth-token(?:\.\d+)?$/;
 
-export async function updateSession(
-  request: NextRequest,
-): Promise<SessionUpdateResult> {
+export async function updateSession(request: NextRequest): Promise<SessionUpdateResult> {
   let supabaseResponse = NextResponse.next({
     request,
   });
@@ -26,9 +24,7 @@ export async function updateSession(
         return request.cookies.getAll();
       },
       setAll(cookiesToSet) {
-        cookiesToSet.forEach(({ name, value }) =>
-          request.cookies.set(name, value),
-        );
+        cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
 
         supabaseResponse = NextResponse.next({
           request,
@@ -54,9 +50,7 @@ export async function updateSession(
 
   if (error) {
     const code =
-      typeof error === "object" && error && "code" in error
-        ? String((error as { code?: string }).code ?? "")
-        : "";
+      typeof error === "object" && error && "code" in error ? String((error as { code?: string }).code ?? "") : "";
 
     if (code === "refresh_token_not_found") {
       authCookieNames.forEach((name) => {
